@@ -299,6 +299,7 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 	// 일반 Key 동작에 대한 Event
 	if (pMsg->message == WM_KEYDOWN)          
 	{
+		CString weq ;
 		switch (pMsg->wParam)
 		{
 		case VK_ESCAPE:
@@ -308,10 +309,41 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 			{
 				m_pedtPannelID[LAYER_1][CH_1]->SetFocus();
 			}
-			else
+			else if (m_nMainKeyInData.GetLength() == 14)
 			{
 				Lf_setFocus();
+					CString sdata;
+					sdata.Format(_T("'PID = '%s' !!"), m_nMainKeyInData);
+					m_pApp->Gf_ShowMessageBox(sdata);
+					BOOL P_Chk = FALSE;
+					if (m_nMainKeyInData.GetLength() >= 10)
+					{
+						P_Chk = m_pApp->Gf_gmesSendHost_PCHK(HOST_PCHK, m_nMainKeyInData); // PCHK 값 전송
+
+					}
+					if (P_Chk == TRUE)
+					{
+						OnBnClickedBtnPiSaveExit_B();// 저장
+						CString sLog;
+						if (m_nMainKeyInData != "")
+						{
+							sdata.Format(_T("PCHK OK [%s]"), m_nMainKeyInData);
+							Lf_addMessage(sdata);
+						}
+					}
+					else
+					{
+						CString sLog;
+						if (m_nMainKeyInData != "")
+						{
+							sdata.Format(_T("PCHK ERROR [%s]"), m_nMainKeyInData);
+							Lf_addMessage(sdata);
+						}
+
+					}
 			}
+			return 1;
+		case VK_TAB:
 			return 1;
 		case VK_SPACE:
 			return 1;
@@ -367,38 +399,38 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 					BOOL P_Chk = FALSE;
 					if (currentText.GetLength() >= 10)
 					{
-						P_Chk = m_pApp->Gf_gmesSendHost_PCHK(HOST_PCHK, currentText); // PCHK 값 전송
+						//P_Chk = m_pApp->Gf_gmesSendHost_PCHK(HOST_PCHK, currentText); // PCHK 값 전송
 						
 					}
 					if (P_Chk == TRUE)
 					{
-						OnBnClickedBtnPiSaveExit_B();// 저장
-						CString sLog;
-						if (currentText != "")
-						{
-							sdata.Format(_T("PCHK OK [%s]"), currentText);
-							Lf_addMessage(sdata);
-						}
+						//OnBnClickedBtnPiSaveExit_B();// 저장
+						//CString sLog;
+						//if (currentText != "")
+						//{
+						//	sdata.Format(_T("PCHK OK [%s]"), currentText);
+						//	Lf_addMessage(sdata);
+						//}
 					}
 					else
 					{
-						CString sLog;
-						if (currentText != "")
-						{
-							sdata.Format(_T("PCHK ERROR [%s]"), currentText);
-							Lf_addMessage(sdata);
-						}
-						m_nMainKeyInData.Empty(); // 입력값 초기화
-						if (pFocusedWnd != nullptr)
-						{
-							// Edit Control의 포인터로 캐스팅
-							CEdit* pEditControl = reinterpret_cast<CEdit*>(pFocusedWnd);
-							if (pEditControl != nullptr)
-							{
-								// Edit Control 내용을 비운 후 새로운 텍스트 설정
-								pEditControl->SetWindowText(_T("")); // 먼저 비움
-							}
-						}
+						//CString sLog;
+						//if (currentText != "")
+						//{
+						//	sdata.Format(_T("PCHK ERROR [%s]"), currentText);
+						//	Lf_addMessage(sdata);
+						//}
+						//m_nMainKeyInData.Empty(); // 입력값 초기화
+						//if (pFocusedWnd != nullptr)
+						//{
+						//	// Edit Control의 포인터로 캐스팅
+						//	CEdit* pEditControl = reinterpret_cast<CEdit*>(pFocusedWnd);
+						//	if (pEditControl != nullptr)
+						//	{
+						//		// Edit Control 내용을 비운 후 새로운 텍스트 설정
+						//		pEditControl->SetWindowText(_T("")); // 먼저 비움
+						//	}
+						//}
 
 					}
 
