@@ -152,7 +152,8 @@ enum
 	CONNECT_BARCODE,
 	CONNECT_MES,
 	CONNECT_EAS,
-	CONNECT_MAX
+	CONNECT_MAX,
+	CONNECT_RMS
 };
 
 enum
@@ -194,6 +195,8 @@ enum
 //------------GMES DEFINE-------------------
 #define SERVER_MES					0
 #define SERVER_EAS					1
+
+#define SERVER_RMS					2
 
 #define MES_ID_TYPE_PID				0
 #define MES_ID_TYPE_SERIAL			1

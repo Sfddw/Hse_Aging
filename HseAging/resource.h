@@ -1535,6 +1535,7 @@
 #define IDC_CHK_MA_RACK1_CH10           2026
 #define IDC_CMB_SY_SENSING_LOG_INTERVAL 2026
 #define IDC_CHK_MA_RACK1_CH11           2027
+#define IDC_STT_SY_MES_TITLE2           2027
 #define IDC_CHK_MA_RACK1_CH12           2028
 #define IDC_CHK_MA_RACK1_CH13           2029
 #define IDC_CHK_MA_RACK1_CH14           2030
