@@ -1214,7 +1214,7 @@ void CHseAgingApp::Gf_LoadSystemData()
 
 	Read_SysIniFile(_T("RMS"), _T("RMS_SERVICE_PORT"), &lpSystemInfo->m_sRmsServicePort);
 	Read_SysIniFile(_T("RMS"), _T("RMS_NETWORK"), &lpSystemInfo->m_sRmsNetWork);
-	Read_SysIniFile(_T("RMS"), _T("RMS_DAEMON_PORT"), &lpSystemInfo->m_sRmsNetWork);
+	Read_SysIniFile(_T("RMS"), _T("RMS_DAEMON_PORT"), &lpSystemInfo->m_sRmsDaemonPort);
 	Read_SysIniFile(_T("RMS"), _T("RMS_LOCAL_SUBJECT"), &lpSystemInfo->m_sRmsLocalSubject);
 	Read_SysIniFile(_T("RMS"), _T("RMS_REMOTE_SUBJECT"), &lpSystemInfo->m_sRmsRemoteSubject);
 

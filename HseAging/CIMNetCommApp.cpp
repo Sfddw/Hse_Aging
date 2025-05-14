@@ -78,6 +78,24 @@ BOOL CCimNetCommApi::ConnectTibRv(int nServerType)
 		}
 	}
 
+	else if (nServerType == SERVER_RMS)
+	{
+
+		VARIANT_BOOL resultConnect = rms->Connect();
+
+		if (resultConnect == VARIANT_TRUE)
+		{
+			m_pApp->Gf_writeMLog(_T("<RMS> RMS Server Connection Succeeded"));
+			m_pApp->m_bIsEasConnect = TRUE;
+			return TRUE;
+		}
+		else
+		{
+			m_pApp->Gf_writeMLog(_T("<RMS> RMS Server Connection Fail"));
+			m_pApp->m_bIsEasConnect = FALSE;
+		}
+	}
+
 	return FALSE;
 }
 

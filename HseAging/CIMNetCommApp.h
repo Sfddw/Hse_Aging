@@ -62,7 +62,7 @@ public:
 
 	ICallGmesClass *gmes;
 	ICallEASClass *eas;
-	ICallRMSClass* rms;
+	ICallRMSClass *rms;
 
 	CLSID			clsid_ECS;
 	HRESULT			hr;
