@@ -1589,7 +1589,7 @@ void CHseAgingDlg::OnTimer(UINT_PTR nIDEvent)
 		else if ((nowTick - m_nSensinglogTick) > (lpSystemInfo->m_nSensingLogInterval * 1000))
 		{
 			m_nSensinglogTick = nowTick;
-			Lf_writeSensingLog();
+			/*Lf_writeSensingLog();*/
 		}
 		if ((nowTick - m_nMeasureTick) >= 500)
 		{
@@ -1617,6 +1617,7 @@ void CHseAgingDlg::OnTimer(UINT_PTR nIDEvent)
 		// 1초 Timer
 		Lf_getTemperature();
 		Lf_getDIOStatus();
+		//Lf_writeSensingLog();
 	}
 	if (nIDEvent == 3)
 	{
@@ -4721,6 +4722,77 @@ void CHseAgingDlg::Lf_getTemperature()
 			Lf_writeTempLog();
 
 			Lf_saveTempMinMax();
+
+			FILE* fp;
+			char filepath[128] = { 0 };
+			char buff[256] = { 0 };
+			char dataline[1024] = { 0 };
+
+			sprintf_s(filepath, "./Logs/SensingLog/SensingLog_%04d%02d%02d.csv", time.GetYear(), time.GetMonth(), time.GetDay());
+			fopen_s(&fp, filepath, "r+");
+			if (fp == NULL)
+			{
+				if ((_access("./Logs/SensingLog", 0)) == -1)
+					_mkdir("./Logs/SensingLog");
+
+				delayMs(1);
+				fopen_s(&fp, filepath, "a+");
+				if (fp == NULL)
+				{
+					if ((_access(filepath, 2)) != -1)
+					{
+						delayMs(1);
+						fopen_s(&fp, filepath, "a+");
+						if (fp == NULL)
+						{
+							return;
+						}
+					}
+				}
+				sprintf_s(buff, "TIME,RACK,LAYER,CH,PID,VCC,ICC,VBL,IBL,TEMP\n");
+				fprintf(fp, "%s", buff);
+			}
+
+			fseek(fp, 0L, SEEK_END);
+
+			char timeKey[100] = { 0, };
+			char panelID[100] = { 0, };
+			sprintf_s(timeKey, "%02d:%02d:%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
+			for (int rack = 0; rack < MAX_RACK; rack++)
+			{
+				for (int layer = 0; layer < MAX_LAYER; layer++)
+				{
+					for (int ch = 0; ch < MAX_LAYER_CHANNEL; ch++)
+					{
+						sprintf_s(panelID, "%S", lpInspWorkInfo->m_sMesPanelID[rack][layer][ch].GetString());
+
+						sprintf_s(buff, "%s,%d,%d,%d,%s,%.2fV,%.2fA,%.2fV,%.2fV,%.1f",
+							timeKey,
+							rack + 1,
+							layer + 1,
+							ch + 1,
+							panelID,
+							(float)lpInspWorkInfo->m_nMeasVCC[rack][layer][ch] / 100.0f,
+							(float)lpInspWorkInfo->m_nMeasICC[rack][layer][ch] / 100.0f,
+							(float)lpInspWorkInfo->m_nMeasVBL[rack][layer][ch] / 100.0f,
+							(float)lpInspWorkInfo->m_nMeasIBL[rack][layer][ch] / 100.0f,
+							(lpInspWorkInfo->m_fTempReadVal[rack])
+						);
+
+						char* pos = dataline;
+						sprintf_s(dataline, "%s\n", buff);
+						fprintf(fp, "%s", pos);
+
+						// Summary 및 실처리 전송을 위한 Min/Max/Avg 값을 저장한다.
+						Lf_savePowerMeasureMinMax(rack, layer, ch);
+					}
+				}
+				lpInspWorkInfo->m_nAgingPowerMeasCount[rack] = lpInspWorkInfo->m_nAgingPowerMeasCount[rack] + 1;
+			}
+
+			fclose(fp);
+
+
 		}
 	}
 
