@@ -309,12 +309,12 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 			{
 				m_pedtPannelID[LAYER_1][CH_1]->SetFocus();
 			}
-			else if (m_nMainKeyInData.GetLength() == 14)
+			else if (m_nMainKeyInData.GetLength() == 14) // PID CHECK
 			{
 				Lf_setFocus();
 					CString sdata;
-					sdata.Format(_T("'PID = '%s' !!"), m_nMainKeyInData);
-					m_pApp->Gf_ShowMessageBox(sdata);
+					/*sdata.Format(_T("'PID = '%s' !!"), m_nMainKeyInData);
+					m_pApp->Gf_ShowMessageBox(sdata);*/
 					BOOL P_Chk = FALSE;
 					if (m_nMainKeyInData.GetLength() >= 10)
 					{
@@ -336,6 +336,15 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 						CString sLog;
 						if (m_nMainKeyInData != "")
 						{
+							m_pApp->pCommand->Gf_dio_setDIOWriteOutput(9, 1); // 부져 on
+
+							sdata.Format(_T("PCHK ERROR [%s]"), m_nMainKeyInData);
+							m_pApp->Gf_ShowMessageBox(sdata);
+
+							lpInspWorkInfo->m_nDioOutputData = lpInspWorkInfo->m_nDioOutputData & ~DIO_OUT_BUZZER;
+
+							m_pApp->pCommand->Gf_dio_setDIOWriteOutput(lpInspWorkInfo->m_nDioOutputData, lpInspWorkInfo->m_nDioOutputMode); // 부져 off
+
 							sdata.Format(_T("PCHK ERROR [%s]"), m_nMainKeyInData);
 							Lf_addMessage(sdata);
 						}
@@ -397,52 +406,11 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 					newLength = currentText.GetLength() - 9;
 					currentText = currentText.Left(newLength);
 					BOOL P_Chk = FALSE;
-					if (currentText.GetLength() >= 10)
-					{
-						//P_Chk = m_pApp->Gf_gmesSendHost_PCHK(HOST_PCHK, currentText); // PCHK 값 전송
-						
-					}
-					if (P_Chk == TRUE)
-					{
-						//OnBnClickedBtnPiSaveExit_B();// 저장
-						//CString sLog;
-						//if (currentText != "")
-						//{
-						//	sdata.Format(_T("PCHK OK [%s]"), currentText);
-						//	Lf_addMessage(sdata);
-						//}
-					}
-					else
-					{
-						//CString sLog;
-						//if (currentText != "")
-						//{
-						//	sdata.Format(_T("PCHK ERROR [%s]"), currentText);
-						//	Lf_addMessage(sdata);
-						//}
-						//m_nMainKeyInData.Empty(); // 입력값 초기화
-						//if (pFocusedWnd != nullptr)
-						//{
-						//	// Edit Control의 포인터로 캐스팅
-						//	CEdit* pEditControl = reinterpret_cast<CEdit*>(pFocusedWnd);
-						//	if (pEditControl != nullptr)
-						//	{
-						//		// Edit Control 내용을 비운 후 새로운 텍스트 설정
-						//		pEditControl->SetWindowText(_T("")); // 먼저 비움
-						//	}
-						//}
-
-					}
 
 					Lf_checkBcrRackChIDInput(rackID, channelID); // RACK 이동 및 포커싱 변경
 
-					
-					//Lf_checkBcrRackChIDInput(rackID, channelID); // RACK 이동 및 포커싱 변경
-					
-
 					m_nMainKeyInData.Empty(); // 입력값 초기화
 
-					//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 0); // PCHK 값 전송
 					return 1;
 				}
 				else

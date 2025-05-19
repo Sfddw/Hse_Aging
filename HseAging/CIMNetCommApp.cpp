@@ -117,6 +117,13 @@ BOOL CCimNetCommApi::CloseTibRv(int nServerType)
 			return TRUE;
 	}
 
+	else if (nServerType == SERVER_RMS) {
+		VARIANT_BOOL resultDisConnect = rms->Terminate();
+
+		if (resultDisConnect == VARIANT_TRUE)
+			return TRUE;
+	}
+
 	return FALSE;
 }
 
