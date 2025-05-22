@@ -288,6 +288,141 @@ void CPidInput::OnDestroy()
 //
 //    return CDialog::PreTranslateMessage(pMsg);
 //}
+//BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
+//{
+//	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
+//	if (pMsg->message == WM_SYSKEYDOWN && pMsg->wParam == VK_F4)
+//	{
+//		if (::GetKeyState(VK_MENU) < 0)	return TRUE;
+//	}
+//
+//	// 일반 Key 동작에 대한 Event
+//	if (pMsg->message == WM_KEYDOWN)          
+//	{
+//		CString weq ;
+//		switch (pMsg->wParam)
+//		{
+//		case VK_ESCAPE:
+//			return 1;
+//		case VK_RETURN:
+//			if (GetDlgItem(IDC_EDT_PI_RACK_ID) == GetFocus())
+//			{
+//				m_pedtPannelID[LAYER_1][CH_1]->SetFocus();
+//			}
+//			else if (m_nMainKeyInData.GetLength() == 14) // PID CHECK
+//			{
+//				Lf_setFocus();
+//					CString sdata;
+//					/*sdata.Format(_T("'PID = '%s' !!"), m_nMainKeyInData);
+//					m_pApp->Gf_ShowMessageBox(sdata);*/
+//					BOOL P_Chk = FALSE;
+//					if (m_nMainKeyInData.GetLength() >= 10)
+//					{
+//						P_Chk = m_pApp->Gf_gmesSendHost_PCHK(HOST_PCHK, m_nMainKeyInData); // PCHK 값 전송
+//
+//					}
+//					if (P_Chk == TRUE)
+//					{
+//						OnBnClickedBtnPiSaveExit_B();// 저장
+//						CString sLog;
+//						if (m_nMainKeyInData != "")
+//						{
+//							sdata.Format(_T("PCHK OK [%s]"), m_nMainKeyInData);
+//							Lf_addMessage(sdata);
+//						}
+//					}
+//					else
+//					{
+//						CString sLog;
+//						if (m_nMainKeyInData != "")
+//						{
+//							m_pApp->pCommand->Gf_dio_setDIOWriteOutput(9, 1); // 부져 on
+//
+//							sdata.Format(_T("PCHK ERROR [%s]"), m_nMainKeyInData);
+//							m_pApp->Gf_ShowMessageBox(sdata);
+//
+//							lpInspWorkInfo->m_nDioOutputData = lpInspWorkInfo->m_nDioOutputData & ~DIO_OUT_BUZZER;
+//
+//							m_pApp->pCommand->Gf_dio_setDIOWriteOutput(lpInspWorkInfo->m_nDioOutputData, lpInspWorkInfo->m_nDioOutputMode); // 부져 off
+//
+//							sdata.Format(_T("PCHK ERROR [%s]"), m_nMainKeyInData);
+//							Lf_addMessage(sdata);
+//						}
+//
+//					}
+//			}
+//			return 1;
+//		case VK_TAB:
+//			return 1;
+//		case VK_SPACE:
+//			return 1;
+//		}
+//		if ((pMsg->wParam >= 33) && (pMsg->wParam <= 'z'))
+//		{
+//			CString sdata;
+//			sdata.Format(_T("%c"), pMsg->wParam);
+//			m_nMainKeyInData.Append(sdata);
+//			CString rackID;
+//			CString channelID;
+//
+//			// RACK과 CH를 분리
+//			if (m_nMainKeyInData.GetLength() >= 10)
+//			{
+//				CString IndexStr = m_nMainKeyInData.Right(10);
+//				CString LeftPart = IndexStr.Left(4);
+//				CString RightPart = IndexStr.Right(4);
+//				CString RightPart2 = RightPart.Left(2);
+//				int rackLength = 6; // "RACK01"의 길이 (6자)
+//				rackID = m_nMainKeyInData.Left(rackLength); // RACK 부분 저장
+//				channelID = m_nMainKeyInData.Right(m_nMainKeyInData.GetLength() - rackLength); // CH 부분 저장
+//
+//				if (LeftPart.CompareNoCase(_T("RACK")) == 0 && RightPart2.CompareNoCase(_T("CH")) == 0)
+//				{
+//					int lengthToExclude = 10; // 제외할 길이
+//					int newLength = m_nMainKeyInData.GetLength() - lengthToExclude; // 새로운 길이 계산
+//					CString currentText;
+//					CString NewRackId = m_nMainKeyInData.Right(10);
+//					rackID = NewRackId.Left(rackLength);
+//					channelID = NewRackId.Right(NewRackId.GetLength() - rackLength);
+//					
+//
+//					// 새로운 CString 저장
+//					CString result = m_nMainKeyInData.Left(newLength); // 앞쪽 부분을 가져옴
+//
+//					CWnd* pFocusedWnd = GetFocus();
+//					if (pFocusedWnd != nullptr)
+//					{
+//						// Edit Control의 포인터로 캐스팅
+//						CEdit* pEditControl = reinterpret_cast<CEdit*>(pFocusedWnd);
+//						if (pEditControl != nullptr)
+//						{
+//							// Edit Control 내용을 비운 후 새로운 텍스트 설정
+//							pEditControl->GetWindowText(currentText);
+//							pEditControl->SetWindowText(_T("")); // 먼저 비움
+//							pEditControl->SetWindowText(result); // 업데이트된 텍스트 설정
+//							lpInspWorkInfo->m_BcrLabelID = result;
+//						}
+//					}
+//					newLength = currentText.GetLength() - 9;
+//					currentText = currentText.Left(newLength);
+//					BOOL P_Chk = FALSE;
+//
+//					Lf_checkBcrRackChIDInput(rackID, channelID); // RACK 이동 및 포커싱 변경
+//
+//					m_nMainKeyInData.Empty(); // 입력값 초기화
+//
+//					return 1;
+//				}
+//				else
+//				{
+//				}
+//			}
+//		}
+//	}
+//
+//	return CDialog::PreTranslateMessage(pMsg);
+//}
+
 BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 {
 	// TODO: 여기에 특수화된 코드를 추가 및/또는 기본 클래스를 호출합니다.
@@ -297,126 +432,142 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 	}
 
 	// 일반 Key 동작에 대한 Event
-	if (pMsg->message == WM_KEYDOWN)          
+	if (pMsg->message == WM_KEYDOWN)
 	{
-		CString weq ;
+		bool ScanIndex = false;
+		CString sdata;
+
 		switch (pMsg->wParam)
 		{
 		case VK_ESCAPE:
 			return 1;
 		case VK_RETURN:
+
 			if (GetDlgItem(IDC_EDT_PI_RACK_ID) == GetFocus())
 			{
 				m_pedtPannelID[LAYER_1][CH_1]->SetFocus();
 			}
-			else if (m_nMainKeyInData.GetLength() == 14) // PID CHECK
+			else if (m_nMainKeyInData.GetLength() == 14) // PID SCAN
 			{
-				Lf_setFocus();
-					CString sdata;
-					/*sdata.Format(_T("'PID = '%s' !!"), m_nMainKeyInData);
-					m_pApp->Gf_ShowMessageBox(sdata);*/
-					BOOL P_Chk = FALSE;
-					if (m_nMainKeyInData.GetLength() >= 10)
-					{
-						P_Chk = m_pApp->Gf_gmesSendHost_PCHK(HOST_PCHK, m_nMainKeyInData); // PCHK 값 전송
+				bool P_Chk = false;
+				if (m_pApp->m_bIsGmesConnect == FALSE)
+				{
+					Lf_addMessage(_T("MES not connected"));
+					m_nMainKeyInData.Empty();
+					return TRUE;
+				}
+				else
+				{
+					P_Chk = m_pApp->Gf_gmesSendHost_PCHK(HOST_PCHK, m_nMainKeyInData); // PCHK 값 전송
+				}
 
-					}
-					if (P_Chk == TRUE)
+				if (P_Chk == TRUE) // PCHK 성공
+				{
+					OnBnClickedBtnPiSaveExit_B(); // 저장
+					if (m_nMainKeyInData != "")
 					{
-						OnBnClickedBtnPiSaveExit_B();// 저장
-						CString sLog;
-						if (m_nMainKeyInData != "")
+						sdata.Format(_T("PCHK OK [%s]"), m_nMainKeyInData);
+						Lf_addMessage(sdata);
+					}
+				}
+				else // PCHK 실패
+				{
+					if (m_nMainKeyInData != "")
+					{
+						m_pApp->pCommand->Gf_dio_setDIOWriteOutput(9, 1); // 부져 on
+
+						sdata.Format(_T("PCHK ERROR [%s]"), m_nMainKeyInData);
+						m_pApp->Gf_ShowMessageBox(sdata);
+
+						lpInspWorkInfo->m_nDioOutputData = lpInspWorkInfo->m_nDioOutputData & ~DIO_OUT_BUZZER;
+
+						m_pApp->pCommand->Gf_dio_setDIOWriteOutput(lpInspWorkInfo->m_nDioOutputData, lpInspWorkInfo->m_nDioOutputMode); // 부져 off
+
+						sdata.Format(_T("PCHK ERROR [%s]"), m_nMainKeyInData);
+						Lf_addMessage(sdata);
+
+						CWnd* pFocusedWnd = GetFocus();
+						if (pFocusedWnd != nullptr)
 						{
-							sdata.Format(_T("PCHK OK [%s]"), m_nMainKeyInData);
-							Lf_addMessage(sdata);
-						}
-					}
-					else
-					{
-						CString sLog;
-						if (m_nMainKeyInData != "")
-						{
-							m_pApp->pCommand->Gf_dio_setDIOWriteOutput(9, 1); // 부져 on
-
-							sdata.Format(_T("PCHK ERROR [%s]"), m_nMainKeyInData);
-							m_pApp->Gf_ShowMessageBox(sdata);
-
-							lpInspWorkInfo->m_nDioOutputData = lpInspWorkInfo->m_nDioOutputData & ~DIO_OUT_BUZZER;
-
-							m_pApp->pCommand->Gf_dio_setDIOWriteOutput(lpInspWorkInfo->m_nDioOutputData, lpInspWorkInfo->m_nDioOutputMode); // 부져 off
-
-							sdata.Format(_T("PCHK ERROR [%s]"), m_nMainKeyInData);
-							Lf_addMessage(sdata);
+							// Edit Control의 포인터로 캐스팅
+							CEdit* pEditControl = reinterpret_cast<CEdit*>(pFocusedWnd);
+							if (pEditControl != nullptr)
+							{
+								pEditControl->SetWindowText(_T(""));
+							}
 						}
 
 					}
+				}
+
+
+				m_nMainKeyInData.Empty(); // 입력값 초기화
+
+				return 1;
 			}
-			return 1;
-		case VK_TAB:
+			else if (m_nMainKeyInData.GetLength() == 10) // RACK ID SCAN
+			{
+				ScanIndex = true;
+
+				CString LeftPart = m_nMainKeyInData.Left(4);
+				CString RackID = m_nMainKeyInData.Left(6);
+				CString RightPart = m_nMainKeyInData.Right(4);
+				CString RightPart2 = RightPart.Left(2);
+				int rackLength = 6; // "RACK01"의 길이 (6자)
+				if (LeftPart.CompareNoCase(_T("RACK")) == 0 && RightPart2.CompareNoCase(_T("CH")) == 0)
+				{
+					LeftPart = m_nMainKeyInData.Right(2); // RACK 부분 저장
+					RightPart = m_nMainKeyInData.Right(2); // CH 부분 저장
+					Lf_checkBcrRackChIDInput(RackID, RightPart); // RACK 이동 및 포커싱 변경
+				}
+				else
+				{
+					sdata.Format(_T("RACK BCR RESCAN"));
+					m_pApp->Gf_ShowMessageBox(sdata);
+				}
+
+
+				m_nMainKeyInData.Empty(); // 입력값 초기화
+
+				return 1;
+			}
+
+			else
+			{
+				if (ScanIndex == true)
+				{
+					ScanIndex = false;
+					return 1;
+				}
+				else
+				{
+					/*sdata.Format(_T("RACK BCR RESCAN222"));
+					m_pApp->Gf_ShowMessageBox(sdata);*/
+					m_nMainKeyInData.Empty(); // 입력값 초기화
+				}
+			}
 			return 1;
 		case VK_SPACE:
 			return 1;
 		}
 		if ((pMsg->wParam >= 33) && (pMsg->wParam <= 'z'))
 		{
-			CString sdata;
 			sdata.Format(_T("%c"), pMsg->wParam);
-			m_nMainKeyInData.Append(sdata);
-			CString rackID;
-			CString channelID;
-
-			// RACK과 CH를 분리
-			if (m_nMainKeyInData.GetLength() >= 10)
+			m_nMainKeyInData.Append(sdata); // 바코드 스캔값 저장
+			if (m_nMainKeyInData.GetLength() >= 14)
 			{
-				CString IndexStr = m_nMainKeyInData.Right(10);
-				CString LeftPart = IndexStr.Left(4);
-				CString RightPart = IndexStr.Right(4);
-				CString RightPart2 = RightPart.Left(2);
-				int rackLength = 6; // "RACK01"의 길이 (6자)
-				rackID = m_nMainKeyInData.Left(rackLength); // RACK 부분 저장
-				channelID = m_nMainKeyInData.Right(m_nMainKeyInData.GetLength() - rackLength); // CH 부분 저장
-
-				if (LeftPart.CompareNoCase(_T("RACK")) == 0 && RightPart2.CompareNoCase(_T("CH")) == 0)
+				CWnd* pFocusedWnd = GetFocus();
+				if (pFocusedWnd != nullptr)
 				{
-					int lengthToExclude = 10; // 제외할 길이
-					int newLength = m_nMainKeyInData.GetLength() - lengthToExclude; // 새로운 길이 계산
-					CString currentText;
-					CString NewRackId = m_nMainKeyInData.Right(10);
-					rackID = NewRackId.Left(rackLength);
-					channelID = NewRackId.Right(NewRackId.GetLength() - rackLength);
-					
-
-					// 새로운 CString 저장
-					CString result = m_nMainKeyInData.Left(newLength); // 앞쪽 부분을 가져옴
-
-					CWnd* pFocusedWnd = GetFocus();
-					if (pFocusedWnd != nullptr)
+					// Edit Control의 포인터로 캐스팅
+					CEdit* pEditControl = reinterpret_cast<CEdit*>(pFocusedWnd);
+					if (pEditControl != nullptr)
 					{
-						// Edit Control의 포인터로 캐스팅
-						CEdit* pEditControl = reinterpret_cast<CEdit*>(pFocusedWnd);
-						if (pEditControl != nullptr)
-						{
-							// Edit Control 내용을 비운 후 새로운 텍스트 설정
-							pEditControl->GetWindowText(currentText);
-							pEditControl->SetWindowText(_T("")); // 먼저 비움
-							pEditControl->SetWindowText(result); // 업데이트된 텍스트 설정
-							lpInspWorkInfo->m_BcrLabelID = result;
-						}
+						pEditControl->SetWindowText(m_nMainKeyInData);
 					}
-					newLength = currentText.GetLength() - 9;
-					currentText = currentText.Left(newLength);
-					BOOL P_Chk = FALSE;
-
-					Lf_checkBcrRackChIDInput(rackID, channelID); // RACK 이동 및 포커싱 변경
-
-					m_nMainKeyInData.Empty(); // 입력값 초기화
-
-					return 1;
-				}
-				else
-				{
 				}
 			}
+			return 1;
 		}
 	}
 
