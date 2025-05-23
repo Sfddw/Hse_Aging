@@ -507,28 +507,47 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 			}
 			else if (m_nMainKeyInData.GetLength() == 10) // RACK ID SCAN
 			{
+				//ScanIndex = true;
+
+				//CString LeftPart = m_nMainKeyInData.Left(4);
+				//CString RackID = m_nMainKeyInData.Left(6);
+				//CString RightPart = m_nMainKeyInData.Right(4);
+				//CString RightPart2 = RightPart.Left(2);
+				//int rackLength = 6; // "RACK01"의 길이 (6자)
+				//if (LeftPart.CompareNoCase(_T("RACK")) == 0 && RightPart2.CompareNoCase(_T("CH")) == 0)
+				//{
+				//	LeftPart = m_nMainKeyInData.Right(2); // RACK 부분 저장
+				//	RightPart = m_nMainKeyInData.Right(2); // CH 부분 저장
+				//	Lf_checkBcrRackChIDInput(RackID, RightPart); // RACK 이동 및 포커싱 변경
+				//}
+				//else
+				//{
+				//	sdata.Format(_T("RACK BCR RESCAN"));
+				//	m_pApp->Gf_ShowMessageBox(sdata);
+				//}
+
+
+				//m_nMainKeyInData.Empty(); // 입력값 초기화
+
+				//return 1;
 				ScanIndex = true;
 
-				CString LeftPart = m_nMainKeyInData.Left(4);
-				CString RackID = m_nMainKeyInData.Left(6);
-				CString RightPart = m_nMainKeyInData.Right(4);
-				CString RightPart2 = RightPart.Left(2);
-				int rackLength = 6; // "RACK01"의 길이 (6자)
-				if (LeftPart.CompareNoCase(_T("RACK")) == 0 && RightPart2.CompareNoCase(_T("CH")) == 0)
+				CString sdata;
+				CString rackId = m_nMainKeyInData.Left(6);       // "RACK01"
+				CString chTag = m_nMainKeyInData.Mid(6, 2);       // "CH"
+				CString chId = m_nMainKeyInData.Right(2);         // "YY"
+
+				if (rackId.Left(4).CompareNoCase(_T("RACK")) == 0 && chTag.CompareNoCase(_T("CH")) == 0)
 				{
-					LeftPart = m_nMainKeyInData.Right(2); // RACK 부분 저장
-					RightPart = m_nMainKeyInData.Right(2); // CH 부분 저장
-					Lf_checkBcrRackChIDInput(RackID, RightPart); // RACK 이동 및 포커싱 변경
+					Lf_checkBcrRackChIDInput(rackId, chId);
 				}
 				else
 				{
-					sdata.Format(_T("RACK BCR RESCAN"));
+					sdata.Format(_T("RACK BARCODE RESCAN"));
 					m_pApp->Gf_ShowMessageBox(sdata);
 				}
 
-
-				m_nMainKeyInData.Empty(); // 입력값 초기화
-
+				m_nMainKeyInData.Empty();
 				return 1;
 			}
 
@@ -541,8 +560,16 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 				}
 				else
 				{
-					/*sdata.Format(_T("RACK BCR RESCAN222"));
-					m_pApp->Gf_ShowMessageBox(sdata);*/
+					CWnd* pFocusedWnd = GetFocus();
+					if (pFocusedWnd != nullptr)
+					{
+						// Edit Control의 포인터로 캐스팅
+						CEdit* pEditControl = reinterpret_cast<CEdit*>(pFocusedWnd);
+						if (pEditControl != nullptr)
+						{
+							pEditControl->SetWindowText(_T(""));
+						}
+					}
 					m_nMainKeyInData.Empty(); // 입력값 초기화
 				}
 			}
@@ -3009,785 +3036,867 @@ BOOL CPidInput::Lf_setExecuteMesAGNOUT() // AGN_OUT
 
 void CPidInput::Lf_checkBcrRackChIDInput(CString RackID, CString ChID)
 {
-	int selRackId = -1;
-	CString rack1_id, rack2_id, rack3_id, rack4_id, rack5_id, rack6_id;
-	Read_SysIniFile(_T("SYSTEM"), _T("RACK1_BCR_ID"), &rack1_id);
-	Read_SysIniFile(_T("SYSTEM"), _T("RACK2_BCR_ID"), &rack2_id);
-	Read_SysIniFile(_T("SYSTEM"), _T("RACK3_BCR_ID"), &rack3_id);
-	Read_SysIniFile(_T("SYSTEM"), _T("RACK4_BCR_ID"), &rack4_id);
-	Read_SysIniFile(_T("SYSTEM"), _T("RACK5_BCR_ID"), &rack5_id);
-	Read_SysIniFile(_T("SYSTEM"), _T("RACK6_BCR_ID"), &rack6_id);
+	// [1] RACK ID 매핑
+	CString rackKeys[6] = {
+		_T("RACK1_BCR_ID"), _T("RACK2_BCR_ID"), _T("RACK3_BCR_ID"),
+		_T("RACK4_BCR_ID"), _T("RACK5_BCR_ID"), _T("RACK6_BCR_ID")
+	};
 
-	if (rack1_id.GetLength() != 0)
+	for (int i = 0; i < 6; ++i)
 	{
-		if (RackID.Find(rack1_id) != -1)
-		{
-			OnBnClickedMbcPiRack1();
-		}
-	}
-	if (rack2_id.GetLength() != 0)
-	{
-		if (RackID.Find(rack2_id) != -1)
-		{
-			OnBnClickedMbcPiRack2();
-		}
-	}
-	if (rack3_id.GetLength() != 0)
-	{
-		if (RackID.Find(rack3_id) != -1)
-		{
-			OnBnClickedMbcPiRack3();
-		}
-	}
-	if (rack4_id.GetLength() != 0)
-	{
-		if (RackID.Find(rack4_id) != -1)
-		{
-			OnBnClickedMbcPiRack4();
-		}
-	}
-	if (rack5_id.GetLength() != 0)
-	{
-		if (RackID.Find(rack5_id) != -1)
-		{
-			OnBnClickedMbcPiRack5();
-		}
-	}
-	if (rack6_id.GetLength() != 0)
-	{
-		if (RackID.Find(rack6_id) != -1)
-		{
-			OnBnClickedMbcPiRack6();
-		}
-	}
-	CString prefix = ChID.Left(2); // "Ch" 부분
-	CString number = ChID.Right(2); // "02" 부분
+		CString rackVal;
+		Read_SysIniFile(_T("SYSTEM"), rackKeys[i], &rackVal);
 
-	// 뒤의 숫자가 "02"인지 확인
-	if (number == _T("01"))
-	{
-		m_pedtPannelID[0][0]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 7);
-	}
-	if (number == _T("02"))
-	{
-		m_pedtPannelID[0][1]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 1);
-	}
-	if (number == _T("03"))
-	{
-		m_pedtPannelID[0][2]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 2);
-	}
-	if (number == _T("04"))
-	{
-		m_pedtPannelID[0][3]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 3);
-	}
-	if (number == _T("05"))
-	{
-		m_pedtPannelID[0][4]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 4);
-	}
-	if (number == _T("06"))
-	{
-		m_pedtPannelID[0][5]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 5);
-	}
-	if (number == _T("07"))
-	{
-		m_pedtPannelID[0][6]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 6);
-	}
-	if (number == _T("08"))
-	{
-		m_pedtPannelID[0][7]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 7);
-	}
-	if (number == _T("09"))
-	{
-		m_pedtPannelID[1][0]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 0);
-	}
-	if (number == _T("10"))
-	{
-		m_pedtPannelID[1][1]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 1);
-	}
-	if (number == _T("11"))
-	{
-		m_pedtPannelID[1][2]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 2);
-	}
-	if (number == _T("12"))
-	{
-		m_pedtPannelID[1][3]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 3);
-	}
-	if (number == _T("13"))
-	{
-		m_pedtPannelID[1][4]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 4);
-	}
-	if (number == _T("14"))
-	{
-		m_pedtPannelID[1][5]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 5);
-	}
-	if (number == _T("15"))
-	{
-		m_pedtPannelID[1][6]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 6);
-	}
-	if (number == _T("16"))
-	{
-		m_pedtPannelID[1][7]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 7);
-	}
-	if (number == _T("17"))
-	{
-		m_pedtPannelID[2][0]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 0);
-	}
-	if (number == _T("18"))
-	{
-		m_pedtPannelID[2][1]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 1);
-	}
-	if (number == _T("19"))
-	{
-		m_pedtPannelID[2][2]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 2);
-	}
-	if (number == _T("20"))
-	{
-		m_pedtPannelID[2][3]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 3);
-	}
-	if (number == _T("21"))
-	{
-		m_pedtPannelID[2][4]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 4);
-	}
-	if (number == _T("22"))
-	{
-		m_pedtPannelID[2][5]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 5);
-	}
-	if (number == _T("23"))
-	{
-		m_pedtPannelID[2][6]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 6);
-	}
-	if (number == _T("24"))
-	{
-		m_pedtPannelID[2][7]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 7);
-	}
-	if (number == _T("25"))
-	{
-		m_pedtPannelID[3][0]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 0);
-	}
-	if (number == _T("26"))
-	{
-		m_pedtPannelID[3][1]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 1);
-	}
-	if (number == _T("27"))
-	{
-		m_pedtPannelID[3][2]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 2);
-	}
-	if (number == _T("28"))
-	{
-		m_pedtPannelID[3][3]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 3);
-	}
-	if (number == _T("29"))
-	{
-		m_pedtPannelID[3][4]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 4);
-	}
-	if (number == _T("30"))
-	{
-		m_pedtPannelID[3][5]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 5);
-	}
-	if (number == _T("31"))
-	{
-		m_pedtPannelID[3][6]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 6);
-	}
-	if (number == _T("32"))
-	{
-		m_pedtPannelID[3][7]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 7);
-	}
-	if (number == _T("33"))
-	{
-		m_pedtPannelID[4][0]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 0);
-	}
-	if (number == _T("34"))
-	{
-		m_pedtPannelID[4][1]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 1);
-	}
-	if (number == _T("35"))
-	{
-		m_pedtPannelID[4][2]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 2);
-	}
-	if (number == _T("36"))
-	{
-		m_pedtPannelID[4][3]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 3);
-	}
-	if (number == _T("37"))
-	{
-		m_pedtPannelID[4][4]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 4);
-	}
-	if (number == _T("38"))
-	{
-		m_pedtPannelID[4][5]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 5);
-	}
-	if (number == _T("39"))
-	{
-		m_pedtPannelID[4][6]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 6);
-	}
-	if (number == _T("40"))
-	{
-		m_pedtPannelID[4][7]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 7);
+		if (!rackVal.IsEmpty() && RackID.Find(rackVal) != -1)
+		{
+			switch (i)
+			{
+			case 0: OnBnClickedMbcPiRack1(); break;
+			case 1: OnBnClickedMbcPiRack2(); break;
+			case 2: OnBnClickedMbcPiRack3(); break;
+			case 3: OnBnClickedMbcPiRack4(); break;
+			case 4: OnBnClickedMbcPiRack5(); break;
+			case 5: OnBnClickedMbcPiRack6(); break;
+			}
+			break;
+		}
 	}
 
-	if (number == _T("41"))
+	// [2] CH 번호 파싱
+	int chNumber = _ttoi(ChID); // "CH10" → 10
+
+	int row = -1, col = -1;
+
+	if (chNumber >= 1 && chNumber <= 40)
 	{
-		m_pedtPannelID[4][8]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 8);
+		row = (chNumber - 1) / 8;
+		col = (chNumber - 1) % 8;
 	}
-	if (number == _T("42"))
+	else if (chNumber >= 41 && chNumber <= 80)
 	{
-		m_pedtPannelID[4][9]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 9);
+		row = (chNumber - 41) / 8;
+		col = (chNumber - 41) % 8 + 8; // 오른쪽 col(8~15)
 	}
-	if (number == _T("43"))
+
+	if (row >= 0 && row < MAX_LAYER && col >= 0 && col < MAX_LAYER_CHANNEL && m_pedtPannelID[row][col] != nullptr)
 	{
-		m_pedtPannelID[4][10]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 10);
+		m_pedtPannelID[row][col]->SetFocus();
 	}
-	if (number == _T("44"))
+	else
 	{
-		m_pedtPannelID[4][11]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 11);
-	}
-	if (number == _T("45"))
-	{
-		m_pedtPannelID[4][12]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 12);
-	}
-	if (number == _T("46"))
-	{
-		m_pedtPannelID[4][13]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 13);
-	}
-	if (number == _T("47"))
-	{
-		m_pedtPannelID[4][14]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 14);
-	}
-	if (number == _T("48"))
-	{
-		m_pedtPannelID[4][15]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 15);
-	}
-	if (number == _T("49"))
-	{
-		m_pedtPannelID[3][8]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 8);
-	}
-	if (number == _T("50"))
-	{
-		m_pedtPannelID[3][9]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 9);
-	}
-	if (number == _T("51"))
-	{
-		m_pedtPannelID[3][10]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 10);
-	}
-	if (number == _T("52"))
-	{
-		m_pedtPannelID[3][11]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 11);
-	}
-	if (number == _T("53"))
-	{
-		m_pedtPannelID[3][12]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 12);
-	}
-	if (number == _T("54"))
-	{
-		m_pedtPannelID[3][13]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 13);
-	}
-	if (number == _T("55"))
-	{
-		m_pedtPannelID[3][14]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 14);
-	}
-	if (number == _T("56"))
-	{
-		m_pedtPannelID[3][15]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 15);
-	}
-	if (number == _T("57"))
-	{
-		m_pedtPannelID[2][8]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 8);
-	}
-	if (number == _T("58"))
-	{
-		m_pedtPannelID[2][9]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 9);
-	}
-	if (number == _T("59"))
-	{
-		m_pedtPannelID[2][10]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 10);
-	}
-	if (number == _T("60"))
-	{
-		m_pedtPannelID[2][11]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 11);
-	}
-	if (number == _T("61"))
-	{
-		m_pedtPannelID[2][12]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 12);
-	}
-	if (number == _T("62"))
-	{
-		m_pedtPannelID[2][13]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 13);
-	}
-	if (number == _T("63"))
-	{
-		m_pedtPannelID[2][14]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 14);
-	}
-	if (number == _T("64"))
-	{
-		m_pedtPannelID[2][15]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 15);
-	}
-	if (number == _T("65"))
-	{
-		m_pedtPannelID[1][8]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 8);
-	}
-	if (number == _T("66"))
-	{
-		m_pedtPannelID[1][9]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 9);
-	}
-	if (number == _T("67"))
-	{
-		m_pedtPannelID[1][10]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 10);
-	}
-	if (number == _T("68"))
-	{
-		m_pedtPannelID[1][11]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 11);
-	}
-	if (number == _T("69"))
-	{
-		m_pedtPannelID[1][12]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 12);
-	}
-	if (number == _T("70"))
-	{
-		m_pedtPannelID[1][13]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 13);
-	}
-	if (number == _T("71"))
-	{
-		m_pedtPannelID[1][14]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 14);
-	}
-	if (number == _T("72"))
-	{
-		m_pedtPannelID[1][15]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 15);
-	}
-	if (number == _T("73"))
-	{
-		m_pedtPannelID[0][8]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 8);
-	}
-	if (number == _T("74"))
-	{
-		m_pedtPannelID[0][9]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 9);
-	}
-	if (number == _T("75"))
-	{
-		m_pedtPannelID[0][10]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 10);
-	}
-	if (number == _T("76"))
-	{
-		m_pedtPannelID[0][11]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 11);
-	}
-	if (number == _T("77"))
-	{
-		m_pedtPannelID[0][12]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 12);
-	}
-	if (number == _T("78"))
-	{
-		m_pedtPannelID[0][13]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 13);
-	}
-	if (number == _T("79"))
-	{
-		m_pedtPannelID[0][14]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 14);
-	}
-	if (number == _T("80"))
-	{
-		m_pedtPannelID[0][15]->SetFocus();
-		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 15);
+		TRACE(_T("⚠️ 잘못된 포커싱: ChID=%s → chNumber=%d → row=%d, col=%d\n"), ChID, chNumber, row, col);
 	}
 }
+
+//void CPidInput::Lf_checkBcrRackChIDInput(CString RackID, CString ChID)
+//{
+//	int selRackId = -1;
+//	CString rack1_id, rack2_id, rack3_id, rack4_id, rack5_id, rack6_id;
+//	Read_SysIniFile(_T("SYSTEM"), _T("RACK1_BCR_ID"), &rack1_id);
+//	Read_SysIniFile(_T("SYSTEM"), _T("RACK2_BCR_ID"), &rack2_id);
+//	Read_SysIniFile(_T("SYSTEM"), _T("RACK3_BCR_ID"), &rack3_id);
+//	Read_SysIniFile(_T("SYSTEM"), _T("RACK4_BCR_ID"), &rack4_id);
+//	Read_SysIniFile(_T("SYSTEM"), _T("RACK5_BCR_ID"), &rack5_id);
+//	Read_SysIniFile(_T("SYSTEM"), _T("RACK6_BCR_ID"), &rack6_id);
+//
+//	if (rack1_id.GetLength() != 0)
+//	{
+//		if (RackID.Find(rack1_id) != -1)
+//		{
+//			OnBnClickedMbcPiRack1();
+//		}
+//	}
+//	if (rack2_id.GetLength() != 0)
+//	{
+//		if (RackID.Find(rack2_id) != -1)
+//		{
+//			OnBnClickedMbcPiRack2();
+//		}
+//	}
+//	if (rack3_id.GetLength() != 0)
+//	{
+//		if (RackID.Find(rack3_id) != -1)
+//		{
+//			OnBnClickedMbcPiRack3();
+//		}
+//	}
+//	if (rack4_id.GetLength() != 0)
+//	{
+//		if (RackID.Find(rack4_id) != -1)
+//		{
+//			OnBnClickedMbcPiRack4();
+//		}
+//	}
+//	if (rack5_id.GetLength() != 0)
+//	{
+//		if (RackID.Find(rack5_id) != -1)
+//		{
+//			OnBnClickedMbcPiRack5();
+//		}
+//	}
+//	if (rack6_id.GetLength() != 0)
+//	{
+//		if (RackID.Find(rack6_id) != -1)
+//		{
+//			OnBnClickedMbcPiRack6();
+//		}
+//	}
+//	CString prefix = ChID.Left(2); // "Ch" 부분
+//	CString number = ChID.Right(2); // "02" 부분
+//
+//	// 뒤의 숫자가 "02"인지 확인
+//	if (number == _T("01"))
+//	{
+//		m_pedtPannelID[0][0]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 7);
+//	}
+//	if (number == _T("02"))
+//	{
+//		m_pedtPannelID[0][1]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 1);
+//	}
+//	if (number == _T("03"))
+//	{
+//		m_pedtPannelID[0][2]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 2);
+//	}
+//	if (number == _T("04"))
+//	{
+//		m_pedtPannelID[0][3]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 3);
+//	}
+//	if (number == _T("05"))
+//	{
+//		m_pedtPannelID[0][4]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 4);
+//	}
+//	if (number == _T("06"))
+//	{
+//		m_pedtPannelID[0][5]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 5);
+//	}
+//	if (number == _T("07"))
+//	{
+//		m_pedtPannelID[0][6]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 6);
+//	}
+//	if (number == _T("08"))
+//	{
+//		m_pedtPannelID[0][7]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 7);
+//	}
+//	if (number == _T("09"))
+//	{
+//		m_pedtPannelID[1][0]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 0);
+//	}
+//	if (number == _T("10"))
+//	{
+//		m_pedtPannelID[1][1]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 1);
+//	}
+//	if (number == _T("11"))
+//	{
+//		m_pedtPannelID[1][2]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 2);
+//	}
+//	if (number == _T("12"))
+//	{
+//		m_pedtPannelID[1][3]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 3);
+//	}
+//	if (number == _T("13"))
+//	{
+//		m_pedtPannelID[1][4]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 4);
+//	}
+//	if (number == _T("14"))
+//	{
+//		m_pedtPannelID[1][5]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 5);
+//	}
+//	if (number == _T("15"))
+//	{
+//		m_pedtPannelID[1][6]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 6);
+//	}
+//	if (number == _T("16"))
+//	{
+//		m_pedtPannelID[1][7]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 7);
+//	}
+//	if (number == _T("17"))
+//	{
+//		m_pedtPannelID[2][0]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 0);
+//	}
+//	if (number == _T("18"))
+//	{
+//		m_pedtPannelID[2][1]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 1);
+//	}
+//	if (number == _T("19"))
+//	{
+//		m_pedtPannelID[2][2]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 2);
+//	}
+//	if (number == _T("20"))
+//	{
+//		m_pedtPannelID[2][3]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 3);
+//	}
+//	if (number == _T("21"))
+//	{
+//		m_pedtPannelID[2][4]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 4);
+//	}
+//	if (number == _T("22"))
+//	{
+//		m_pedtPannelID[2][5]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 5);
+//	}
+//	if (number == _T("23"))
+//	{
+//		m_pedtPannelID[2][6]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 6);
+//	}
+//	if (number == _T("24"))
+//	{
+//		m_pedtPannelID[2][7]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 7);
+//	}
+//	if (number == _T("25"))
+//	{
+//		m_pedtPannelID[3][0]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 0);
+//	}
+//	if (number == _T("26"))
+//	{
+//		m_pedtPannelID[3][1]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 1);
+//	}
+//	if (number == _T("27"))
+//	{
+//		m_pedtPannelID[3][2]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 2);
+//	}
+//	if (number == _T("28"))
+//	{
+//		m_pedtPannelID[3][3]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 3);
+//	}
+//	if (number == _T("29"))
+//	{
+//		m_pedtPannelID[3][4]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 4);
+//	}
+//	if (number == _T("30"))
+//	{
+//		m_pedtPannelID[3][5]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 5);
+//	}
+//	if (number == _T("31"))
+//	{
+//		m_pedtPannelID[3][6]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 6);
+//	}
+//	if (number == _T("32"))
+//	{
+//		m_pedtPannelID[3][7]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 7);
+//	}
+//	if (number == _T("33"))
+//	{
+//		m_pedtPannelID[4][0]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 0);
+//	}
+//	if (number == _T("34"))
+//	{
+//		m_pedtPannelID[4][1]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 1);
+//	}
+//	if (number == _T("35"))
+//	{
+//		m_pedtPannelID[4][2]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 2);
+//	}
+//	if (number == _T("36"))
+//	{
+//		m_pedtPannelID[4][3]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 3);
+//	}
+//	if (number == _T("37"))
+//	{
+//		m_pedtPannelID[4][4]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 4);
+//	}
+//	if (number == _T("38"))
+//	{
+//		m_pedtPannelID[4][5]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 5);
+//	}
+//	if (number == _T("39"))
+//	{
+//		m_pedtPannelID[4][6]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 6);
+//	}
+//	if (number == _T("40"))
+//	{
+//		m_pedtPannelID[4][7]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 7);
+//	}
+//
+//	if (number == _T("41"))
+//	{
+//		m_pedtPannelID[4][8]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 8);
+//	}
+//	if (number == _T("42"))
+//	{
+//		m_pedtPannelID[4][9]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 9);
+//	}
+//	if (number == _T("43"))
+//	{
+//		m_pedtPannelID[4][10]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 10);
+//	}
+//	if (number == _T("44"))
+//	{
+//		m_pedtPannelID[4][11]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 11);
+//	}
+//	if (number == _T("45"))
+//	{
+//		m_pedtPannelID[4][12]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 12);
+//	}
+//	if (number == _T("46"))
+//	{
+//		m_pedtPannelID[4][13]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 13);
+//	}
+//	if (number == _T("47"))
+//	{
+//		m_pedtPannelID[4][14]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 14);
+//	}
+//	if (number == _T("48"))
+//	{
+//		m_pedtPannelID[4][15]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 4, 15);
+//	}
+//	if (number == _T("49"))
+//	{
+//		m_pedtPannelID[3][8]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 8);
+//	}
+//	if (number == _T("50"))
+//	{
+//		m_pedtPannelID[3][9]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 9);
+//	}
+//	if (number == _T("51"))
+//	{
+//		m_pedtPannelID[3][10]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 10);
+//	}
+//	if (number == _T("52"))
+//	{
+//		m_pedtPannelID[3][11]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 11);
+//	}
+//	if (number == _T("53"))
+//	{
+//		m_pedtPannelID[3][12]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 12);
+//	}
+//	if (number == _T("54"))
+//	{
+//		m_pedtPannelID[3][13]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 13);
+//	}
+//	if (number == _T("55"))
+//	{
+//		m_pedtPannelID[3][14]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 14);
+//	}
+//	if (number == _T("56"))
+//	{
+//		m_pedtPannelID[3][15]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 3, 15);
+//	}
+//	if (number == _T("57"))
+//	{
+//		m_pedtPannelID[2][8]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 8);
+//	}
+//	if (number == _T("58"))
+//	{
+//		m_pedtPannelID[2][9]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 9);
+//	}
+//	if (number == _T("59"))
+//	{
+//		m_pedtPannelID[2][10]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 10);
+//	}
+//	if (number == _T("60"))
+//	{
+//		m_pedtPannelID[2][11]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 11);
+//	}
+//	if (number == _T("61"))
+//	{
+//		m_pedtPannelID[2][12]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 12);
+//	}
+//	if (number == _T("62"))
+//	{
+//		m_pedtPannelID[2][13]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 13);
+//	}
+//	if (number == _T("63"))
+//	{
+//		m_pedtPannelID[2][14]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 14);
+//	}
+//	if (number == _T("64"))
+//	{
+//		m_pedtPannelID[2][15]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 2, 15);
+//	}
+//	if (number == _T("65"))
+//	{
+//		m_pedtPannelID[1][8]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 8);
+//	}
+//	if (number == _T("66"))
+//	{
+//		m_pedtPannelID[1][9]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 9);
+//	}
+//	if (number == _T("67"))
+//	{
+//		m_pedtPannelID[1][10]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 10);
+//	}
+//	if (number == _T("68"))
+//	{
+//		m_pedtPannelID[1][11]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 11);
+//	}
+//	if (number == _T("69"))
+//	{
+//		m_pedtPannelID[1][12]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 12);
+//	}
+//	if (number == _T("70"))
+//	{
+//		m_pedtPannelID[1][13]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 13);
+//	}
+//	if (number == _T("71"))
+//	{
+//		m_pedtPannelID[1][14]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 14);
+//	}
+//	if (number == _T("72"))
+//	{
+//		m_pedtPannelID[1][15]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 1, 15);
+//	}
+//	if (number == _T("73"))
+//	{
+//		m_pedtPannelID[0][8]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 8);
+//	}
+//	if (number == _T("74"))
+//	{
+//		m_pedtPannelID[0][9]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 9);
+//	}
+//	if (number == _T("75"))
+//	{
+//		m_pedtPannelID[0][10]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 10);
+//	}
+//	if (number == _T("76"))
+//	{
+//		m_pedtPannelID[0][11]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 11);
+//	}
+//	if (number == _T("77"))
+//	{
+//		m_pedtPannelID[0][12]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 12);
+//	}
+//	if (number == _T("78"))
+//	{
+//		m_pedtPannelID[0][13]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 13);
+//	}
+//	if (number == _T("79"))
+//	{
+//		m_pedtPannelID[0][14]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 14);
+//	}
+//	if (number == _T("80"))
+//	{
+//		m_pedtPannelID[0][15]->SetFocus();
+//		//m_pApp->Gf_gmesSendHost(HOST_PCHK, m_nSelRack, 0, 15);
+//	}
+//}
+
 
 void CPidInput::Lf_Send_checkBcrRackChIDInput(CString RackID, CString ChID)
 {
-	if (ChID == _T("01"))
+	int chNumber = _ttoi(ChID); // "CH10" → 10
+
+	int row = -1, col = -1;
+
+	if (chNumber >= 1 && chNumber <= 40)
 	{
-		m_pedtPannelID[0][0]->SetFocus();
+		row = (chNumber - 1) / 8;
+		col = (chNumber - 1) % 8;
 	}
-	if (ChID == _T("02"))
+	else if (chNumber >= 41 && chNumber <= 80)
 	{
-		m_pedtPannelID[0][1]->SetFocus();
-	}
-	if (ChID == _T("03"))
-	{
-		m_pedtPannelID[0][2]->SetFocus();
-	}
-	if (ChID == _T("04"))
-	{
-		m_pedtPannelID[0][3]->SetFocus();
-	}
-	if (ChID == _T("05"))
-	{
-		m_pedtPannelID[0][4]->SetFocus();
-	}
-	if (ChID == _T("06"))
-	{
-		m_pedtPannelID[0][5]->SetFocus();
-	}
-	if (ChID == _T("07"))
-	{
-		m_pedtPannelID[0][6]->SetFocus();
-	}
-	if (ChID == _T("08"))
-	{
-		m_pedtPannelID[0][7]->SetFocus();
-	}
-	if (ChID == _T("09"))
-	{
-		m_pedtPannelID[1][0]->SetFocus();
-	}
-	if (ChID == _T("10"))
-	{
-		m_pedtPannelID[1][1]->SetFocus();
-	}
-	if (ChID == _T("11"))
-	{
-		m_pedtPannelID[1][2]->SetFocus();
-	}
-	if (ChID == _T("12"))
-	{
-		m_pedtPannelID[1][3]->SetFocus();
-	}
-	if (ChID == _T("13"))
-	{
-		m_pedtPannelID[1][4]->SetFocus();
-	}
-	if (ChID == _T("14"))
-	{
-		m_pedtPannelID[1][5]->SetFocus();
-	}
-	if (ChID == _T("15"))
-	{
-		m_pedtPannelID[1][6]->SetFocus();
-	}
-	if (ChID == _T("16"))
-	{
-		m_pedtPannelID[1][7]->SetFocus();
-	}
-	if (ChID == _T("17"))
-	{
-		m_pedtPannelID[2][0]->SetFocus();
-	}
-	if (ChID == _T("18"))
-	{
-		m_pedtPannelID[2][1]->SetFocus();
-	}
-	if (ChID == _T("19"))
-	{
-		m_pedtPannelID[2][2]->SetFocus();
-	}
-	if (ChID == _T("20"))
-	{
-		m_pedtPannelID[2][3]->SetFocus();
-	}
-	if (ChID == _T("21"))
-	{
-		m_pedtPannelID[2][4]->SetFocus();
-	}
-	if (ChID == _T("22"))
-	{
-		m_pedtPannelID[2][5]->SetFocus();
-	}
-	if (ChID == _T("23"))
-	{
-		m_pedtPannelID[2][6]->SetFocus();
-	}
-	if (ChID == _T("24"))
-	{
-		m_pedtPannelID[2][7]->SetFocus();
-	}
-	if (ChID == _T("25"))
-	{
-		m_pedtPannelID[3][0]->SetFocus();
-	}
-	if (ChID == _T("26"))
-	{
-		m_pedtPannelID[3][1]->SetFocus();
-	}
-	if (ChID == _T("27"))
-	{
-		m_pedtPannelID[3][2]->SetFocus();
-	}
-	if (ChID == _T("28"))
-	{
-		m_pedtPannelID[3][3]->SetFocus();
-	}
-	if (ChID == _T("29"))
-	{
-		m_pedtPannelID[3][4]->SetFocus();
-	}
-	if (ChID == _T("30"))
-	{
-		m_pedtPannelID[3][5]->SetFocus();
-	}
-	if (ChID == _T("31"))
-	{
-		m_pedtPannelID[3][6]->SetFocus();
-	}
-	if (ChID == _T("32"))
-	{
-		m_pedtPannelID[3][7]->SetFocus();
-	}
-	if (ChID == _T("33"))
-	{
-		m_pedtPannelID[4][0]->SetFocus();
-	}
-	if (ChID == _T("34"))
-	{
-		m_pedtPannelID[4][1]->SetFocus();
-	}
-	if (ChID == _T("35"))
-	{
-		m_pedtPannelID[4][2]->SetFocus();
-	}
-	if (ChID == _T("36"))
-	{
-		m_pedtPannelID[4][3]->SetFocus();
-	}
-	if (ChID == _T("37"))
-	{
-		m_pedtPannelID[4][4]->SetFocus();
-	}
-	if (ChID == _T("38"))
-	{
-		m_pedtPannelID[4][5]->SetFocus();
-	}
-	if (ChID == _T("39"))
-	{
-		m_pedtPannelID[4][6]->SetFocus();
-	}
-	if (ChID == _T("40"))
-	{
-		m_pedtPannelID[4][7]->SetFocus();
+		row = (chNumber - 41) / 8;
+		col = (chNumber - 41) % 8 + 8; // 오른쪽 col(8~15)
 	}
 
-	if (ChID == _T("41"))
+	if (row >= 0 && row < MAX_LAYER && col >= 0 && col < MAX_LAYER_CHANNEL && m_pedtPannelID[row][col] != nullptr)
 	{
-		m_pedtPannelID[4][8]->SetFocus();
+		m_pedtPannelID[row][col]->SetFocus();
 	}
-	if (ChID == _T("42"))
+	else
 	{
-		m_pedtPannelID[4][9]->SetFocus();
-	}
-	if (ChID == _T("43"))
-	{
-		m_pedtPannelID[4][10]->SetFocus();
-	}
-	if (ChID == _T("44"))
-	{
-		m_pedtPannelID[4][11]->SetFocus();
-	}
-	if (ChID == _T("45"))
-	{
-		m_pedtPannelID[4][12]->SetFocus();
-	}
-	if (ChID == _T("46"))
-	{
-		m_pedtPannelID[4][13]->SetFocus();
-	}
-	if (ChID == _T("47"))
-	{
-		m_pedtPannelID[4][14]->SetFocus();
-	}
-	if (ChID == _T("48"))
-	{
-		m_pedtPannelID[4][15]->SetFocus();
-	}
-	if (ChID == _T("49"))
-	{
-		m_pedtPannelID[3][8]->SetFocus();
-	}
-	if (ChID == _T("50"))
-	{
-		m_pedtPannelID[3][9]->SetFocus();
-	}
-	if (ChID == _T("51"))
-	{
-		m_pedtPannelID[3][10]->SetFocus();
-	}
-	if (ChID == _T("52"))
-	{
-		m_pedtPannelID[3][11]->SetFocus();
-	}
-	if (ChID == _T("53"))
-	{
-		m_pedtPannelID[3][12]->SetFocus();
-	}
-	if (ChID == _T("54"))
-	{
-		m_pedtPannelID[3][13]->SetFocus();
-	}
-	if (ChID == _T("55"))
-	{
-		m_pedtPannelID[3][14]->SetFocus();
-	}
-	if (ChID == _T("56"))
-	{
-		m_pedtPannelID[3][15]->SetFocus();
-	}
-	if (ChID == _T("57"))
-	{
-		m_pedtPannelID[2][8]->SetFocus();
-	}
-	if (ChID == _T("58"))
-	{
-		m_pedtPannelID[2][9]->SetFocus();
-	}
-	if (ChID == _T("59"))
-	{
-		m_pedtPannelID[2][10]->SetFocus();
-	}
-	if (ChID == _T("60"))
-	{
-		m_pedtPannelID[2][11]->SetFocus();
-	}
-	if (ChID == _T("61"))
-	{
-		m_pedtPannelID[2][12]->SetFocus();
-	}
-	if (ChID == _T("62"))
-	{
-		m_pedtPannelID[2][13]->SetFocus();
-	}
-	if (ChID == _T("63"))
-	{
-		m_pedtPannelID[2][14]->SetFocus();
-	}
-	if (ChID == _T("64"))
-	{
-		m_pedtPannelID[2][15]->SetFocus();
-	}
-	if (ChID == _T("65"))
-	{
-		m_pedtPannelID[1][8]->SetFocus();
-	}
-	if (ChID == _T("66"))
-	{
-		m_pedtPannelID[1][9]->SetFocus();
-	}
-	if (ChID == _T("67"))
-	{
-		m_pedtPannelID[1][10]->SetFocus();
-	}
-	if (ChID == _T("68"))
-	{
-		m_pedtPannelID[1][11]->SetFocus();
-	}
-	if (ChID == _T("69"))
-	{
-		m_pedtPannelID[1][12]->SetFocus();
-	}
-	if (ChID == _T("70"))
-	{
-		m_pedtPannelID[1][13]->SetFocus();
-	}
-	if (ChID == _T("71"))
-	{
-		m_pedtPannelID[1][14]->SetFocus();
-	}
-	if (ChID == _T("72"))
-	{
-		m_pedtPannelID[1][15]->SetFocus();
-	}
-	if (ChID == _T("73"))
-	{
-		m_pedtPannelID[0][8]->SetFocus();
-	}
-	if (ChID == _T("74"))
-	{
-		m_pedtPannelID[0][9]->SetFocus();
-	}
-	if (ChID == _T("75"))
-	{
-		m_pedtPannelID[0][10]->SetFocus();
-	}
-	if (ChID == _T("76"))
-	{
-		m_pedtPannelID[0][11]->SetFocus();
-	}
-	if (ChID == _T("77"))
-	{
-		m_pedtPannelID[0][12]->SetFocus();
-	}
-	if (ChID == _T("78"))
-	{
-		m_pedtPannelID[0][13]->SetFocus();
-	}
-	if (ChID == _T("79"))
-	{
-		m_pedtPannelID[0][14]->SetFocus();
-	}
-	if (ChID == _T("80"))
-	{
-		m_pedtPannelID[0][15]->SetFocus();
+		TRACE(_T("⚠️ 잘못된 포커싱: ChID=%s → chNumber=%d → row=%d, col=%d\n"), ChID, chNumber, row, col);
 	}
 }
+
+//void CPidInput::Lf_Send_checkBcrRackChIDInput(CString RackID, CString ChID)
+//{
+//	if (ChID == _T("01"))
+//	{
+//		m_pedtPannelID[0][0]->SetFocus();
+//	}
+//	if (ChID == _T("02"))
+//	{
+//		m_pedtPannelID[0][1]->SetFocus();
+//	}
+//	if (ChID == _T("03"))
+//	{
+//		m_pedtPannelID[0][2]->SetFocus();
+//	}
+//	if (ChID == _T("04"))
+//	{
+//		m_pedtPannelID[0][3]->SetFocus();
+//	}
+//	if (ChID == _T("05"))
+//	{
+//		m_pedtPannelID[0][4]->SetFocus();
+//	}
+//	if (ChID == _T("06"))
+//	{
+//		m_pedtPannelID[0][5]->SetFocus();
+//	}
+//	if (ChID == _T("07"))
+//	{
+//		m_pedtPannelID[0][6]->SetFocus();
+//	}
+//	if (ChID == _T("08"))
+//	{
+//		m_pedtPannelID[0][7]->SetFocus();
+//	}
+//	if (ChID == _T("09"))
+//	{
+//		m_pedtPannelID[1][0]->SetFocus();
+//	}
+//	if (ChID == _T("10"))
+//	{
+//		m_pedtPannelID[1][1]->SetFocus();
+//	}
+//	if (ChID == _T("11"))
+//	{
+//		m_pedtPannelID[1][2]->SetFocus();
+//	}
+//	if (ChID == _T("12"))
+//	{
+//		m_pedtPannelID[1][3]->SetFocus();
+//	}
+//	if (ChID == _T("13"))
+//	{
+//		m_pedtPannelID[1][4]->SetFocus();
+//	}
+//	if (ChID == _T("14"))
+//	{
+//		m_pedtPannelID[1][5]->SetFocus();
+//	}
+//	if (ChID == _T("15"))
+//	{
+//		m_pedtPannelID[1][6]->SetFocus();
+//	}
+//	if (ChID == _T("16"))
+//	{
+//		m_pedtPannelID[1][7]->SetFocus();
+//	}
+//	if (ChID == _T("17"))
+//	{
+//		m_pedtPannelID[2][0]->SetFocus();
+//	}
+//	if (ChID == _T("18"))
+//	{
+//		m_pedtPannelID[2][1]->SetFocus();
+//	}
+//	if (ChID == _T("19"))
+//	{
+//		m_pedtPannelID[2][2]->SetFocus();
+//	}
+//	if (ChID == _T("20"))
+//	{
+//		m_pedtPannelID[2][3]->SetFocus();
+//	}
+//	if (ChID == _T("21"))
+//	{
+//		m_pedtPannelID[2][4]->SetFocus();
+//	}
+//	if (ChID == _T("22"))
+//	{
+//		m_pedtPannelID[2][5]->SetFocus();
+//	}
+//	if (ChID == _T("23"))
+//	{
+//		m_pedtPannelID[2][6]->SetFocus();
+//	}
+//	if (ChID == _T("24"))
+//	{
+//		m_pedtPannelID[2][7]->SetFocus();
+//	}
+//	if (ChID == _T("25"))
+//	{
+//		m_pedtPannelID[3][0]->SetFocus();
+//	}
+//	if (ChID == _T("26"))
+//	{
+//		m_pedtPannelID[3][1]->SetFocus();
+//	}
+//	if (ChID == _T("27"))
+//	{
+//		m_pedtPannelID[3][2]->SetFocus();
+//	}
+//	if (ChID == _T("28"))
+//	{
+//		m_pedtPannelID[3][3]->SetFocus();
+//	}
+//	if (ChID == _T("29"))
+//	{
+//		m_pedtPannelID[3][4]->SetFocus();
+//	}
+//	if (ChID == _T("30"))
+//	{
+//		m_pedtPannelID[3][5]->SetFocus();
+//	}
+//	if (ChID == _T("31"))
+//	{
+//		m_pedtPannelID[3][6]->SetFocus();
+//	}
+//	if (ChID == _T("32"))
+//	{
+//		m_pedtPannelID[3][7]->SetFocus();
+//	}
+//	if (ChID == _T("33"))
+//	{
+//		m_pedtPannelID[4][0]->SetFocus();
+//	}
+//	if (ChID == _T("34"))
+//	{
+//		m_pedtPannelID[4][1]->SetFocus();
+//	}
+//	if (ChID == _T("35"))
+//	{
+//		m_pedtPannelID[4][2]->SetFocus();
+//	}
+//	if (ChID == _T("36"))
+//	{
+//		m_pedtPannelID[4][3]->SetFocus();
+//	}
+//	if (ChID == _T("37"))
+//	{
+//		m_pedtPannelID[4][4]->SetFocus();
+//	}
+//	if (ChID == _T("38"))
+//	{
+//		m_pedtPannelID[4][5]->SetFocus();
+//	}
+//	if (ChID == _T("39"))
+//	{
+//		m_pedtPannelID[4][6]->SetFocus();
+//	}
+//	if (ChID == _T("40"))
+//	{
+//		m_pedtPannelID[4][7]->SetFocus();
+//	}
+//
+//	if (ChID == _T("41"))
+//	{
+//		m_pedtPannelID[4][8]->SetFocus();
+//	}
+//	if (ChID == _T("42"))
+//	{
+//		m_pedtPannelID[4][9]->SetFocus();
+//	}
+//	if (ChID == _T("43"))
+//	{
+//		m_pedtPannelID[4][10]->SetFocus();
+//	}
+//	if (ChID == _T("44"))
+//	{
+//		m_pedtPannelID[4][11]->SetFocus();
+//	}
+//	if (ChID == _T("45"))
+//	{
+//		m_pedtPannelID[4][12]->SetFocus();
+//	}
+//	if (ChID == _T("46"))
+//	{
+//		m_pedtPannelID[4][13]->SetFocus();
+//	}
+//	if (ChID == _T("47"))
+//	{
+//		m_pedtPannelID[4][14]->SetFocus();
+//	}
+//	if (ChID == _T("48"))
+//	{
+//		m_pedtPannelID[4][15]->SetFocus();
+//	}
+//	if (ChID == _T("49"))
+//	{
+//		m_pedtPannelID[3][8]->SetFocus();
+//	}
+//	if (ChID == _T("50"))
+//	{
+//		m_pedtPannelID[3][9]->SetFocus();
+//	}
+//	if (ChID == _T("51"))
+//	{
+//		m_pedtPannelID[3][10]->SetFocus();
+//	}
+//	if (ChID == _T("52"))
+//	{
+//		m_pedtPannelID[3][11]->SetFocus();
+//	}
+//	if (ChID == _T("53"))
+//	{
+//		m_pedtPannelID[3][12]->SetFocus();
+//	}
+//	if (ChID == _T("54"))
+//	{
+//		m_pedtPannelID[3][13]->SetFocus();
+//	}
+//	if (ChID == _T("55"))
+//	{
+//		m_pedtPannelID[3][14]->SetFocus();
+//	}
+//	if (ChID == _T("56"))
+//	{
+//		m_pedtPannelID[3][15]->SetFocus();
+//	}
+//	if (ChID == _T("57"))
+//	{
+//		m_pedtPannelID[2][8]->SetFocus();
+//	}
+//	if (ChID == _T("58"))
+//	{
+//		m_pedtPannelID[2][9]->SetFocus();
+//	}
+//	if (ChID == _T("59"))
+//	{
+//		m_pedtPannelID[2][10]->SetFocus();
+//	}
+//	if (ChID == _T("60"))
+//	{
+//		m_pedtPannelID[2][11]->SetFocus();
+//	}
+//	if (ChID == _T("61"))
+//	{
+//		m_pedtPannelID[2][12]->SetFocus();
+//	}
+//	if (ChID == _T("62"))
+//	{
+//		m_pedtPannelID[2][13]->SetFocus();
+//	}
+//	if (ChID == _T("63"))
+//	{
+//		m_pedtPannelID[2][14]->SetFocus();
+//	}
+//	if (ChID == _T("64"))
+//	{
+//		m_pedtPannelID[2][15]->SetFocus();
+//	}
+//	if (ChID == _T("65"))
+//	{
+//		m_pedtPannelID[1][8]->SetFocus();
+//	}
+//	if (ChID == _T("66"))
+//	{
+//		m_pedtPannelID[1][9]->SetFocus();
+//	}
+//	if (ChID == _T("67"))
+//	{
+//		m_pedtPannelID[1][10]->SetFocus();
+//	}
+//	if (ChID == _T("68"))
+//	{
+//		m_pedtPannelID[1][11]->SetFocus();
+//	}
+//	if (ChID == _T("69"))
+//	{
+//		m_pedtPannelID[1][12]->SetFocus();
+//	}
+//	if (ChID == _T("70"))
+//	{
+//		m_pedtPannelID[1][13]->SetFocus();
+//	}
+//	if (ChID == _T("71"))
+//	{
+//		m_pedtPannelID[1][14]->SetFocus();
+//	}
+//	if (ChID == _T("72"))
+//	{
+//		m_pedtPannelID[1][15]->SetFocus();
+//	}
+//	if (ChID == _T("73"))
+//	{
+//		m_pedtPannelID[0][8]->SetFocus();
+//	}
+//	if (ChID == _T("74"))
+//	{
+//		m_pedtPannelID[0][9]->SetFocus();
+//	}
+//	if (ChID == _T("75"))
+//	{
+//		m_pedtPannelID[0][10]->SetFocus();
+//	}
+//	if (ChID == _T("76"))
+//	{
+//		m_pedtPannelID[0][11]->SetFocus();
+//	}
+//	if (ChID == _T("77"))
+//	{
+//		m_pedtPannelID[0][12]->SetFocus();
+//	}
+//	if (ChID == _T("78"))
+//	{
+//		m_pedtPannelID[0][13]->SetFocus();
+//	}
+//	if (ChID == _T("79"))
+//	{
+//		m_pedtPannelID[0][14]->SetFocus();
+//	}
+//	if (ChID == _T("80"))
+//	{
+//		m_pedtPannelID[0][15]->SetFocus();
+//	}
+//}
