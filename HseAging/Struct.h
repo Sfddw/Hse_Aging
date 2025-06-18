@@ -182,6 +182,10 @@ typedef struct _ST_INSPWORKINFO_
 	float m_fOpeIblSetMin[MAX_RACK];
 	float m_fOpeIblSetMax[MAX_RACK];
 
+	int m_nTempSt590_01; // 온도 컨트롤러 ST-590 1 ZONE 셋팅값
+	int m_nTempSt590_02; // 2 ZONE
+	int m_nTempSt590_03; // 3 ZONE
+
 	int m_nAgingTempMeasCount[MAX_RACK];
 	int m_nAgingPowerMeasCount[MAX_RACK];
 	float m_fOpeAgingTempMin[MAX_RACK];
@@ -248,7 +252,8 @@ typedef struct _ST_INSPWORKINFO_
 
 	CString m_RackID;
 	CString m_ChID;
-	CString m_BcrLabelID;
+	CString m_StopRackID;
+	BOOL m_PidFlag = false;
 
 	BOOL m_nAgnOutYn[6];
 	BOOL m_nAgnIn = FALSE;

@@ -209,6 +209,12 @@ void CPidInput::OnDestroy()
 	{
 		m_Font[i].DeleteObject();
 	}
+	CHseAgingDlg* pDlg = (CHseAgingDlg*)AfxGetMainWnd();
+	if (pDlg != nullptr && lpInspWorkInfo->m_PidFlag == true)
+	{
+		pDlg->Lf_setAgingSTOP_PID(_ttoi(lpInspWorkInfo->m_StopRackID));
+		lpInspWorkInfo->m_PidFlag = false;
+	}
 }
 
 //BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
@@ -450,10 +456,20 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 			else if (m_nMainKeyInData.GetLength() == 14) // PID SCAN
 			{
 				bool P_Chk = false;
+				CHseAgingDlg* pDlg = (CHseAgingDlg*)AfxGetMainWnd();
+				pDlg->Lf_setAgingSTOP_PID(_ttoi(lpInspWorkInfo->m_StopRackID));
 				if (m_pApp->m_bIsGmesConnect == FALSE)
 				{
 					Lf_addMessage(_T("MES not connected"));
 					m_nMainKeyInData.Empty();
+
+					//int RackID = _ttoi(lpInspWorkInfo->m_RackID);
+					//int ChID = _ttoi(lpInspWorkInfo->m_ChID);
+					//RackID -= 1;
+					////pDlg->Lf_setAgingSTOP_PID(_ttoi(lpInspWorkInfo->m_StopRackID));
+
+					//pDlg->Lf_setAgingSTART_PID(RackID, ChID);
+
 					return TRUE;
 				}
 				else
@@ -461,16 +477,23 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 					P_Chk = m_pApp->Gf_gmesSendHost_PCHK(HOST_PCHK, m_nMainKeyInData); // PCHK 값 전송
 				}
 
-				if (P_Chk == TRUE) // PCHK 성공
+				if (P_Chk == TRUE)
 				{
 					OnBnClickedBtnPiSaveExit_B(); // 저장
 					if (m_nMainKeyInData != "")
 					{
 						sdata.Format(_T("PCHK OK [%s]"), m_nMainKeyInData);
 						Lf_addMessage(sdata);
+
+						int RackID = _ttoi(lpInspWorkInfo->m_RackID);
+						int ChID = _ttoi(lpInspWorkInfo->m_ChID);
+						RackID -= 1;
+						//pDlg->Lf_setAgingSTOP_PID(_ttoi(lpInspWorkInfo->m_StopRackID));
+
+						pDlg->Lf_setAgingSTART_PID(RackID, ChID);
 					}
 				}
-				else // PCHK 실패
+				else
 				{
 					if (m_nMainKeyInData != "")
 					{
@@ -507,29 +530,6 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 			}
 			else if (m_nMainKeyInData.GetLength() == 10) // RACK ID SCAN
 			{
-				//ScanIndex = true;
-
-				//CString LeftPart = m_nMainKeyInData.Left(4);
-				//CString RackID = m_nMainKeyInData.Left(6);
-				//CString RightPart = m_nMainKeyInData.Right(4);
-				//CString RightPart2 = RightPart.Left(2);
-				//int rackLength = 6; // "RACK01"의 길이 (6자)
-				//if (LeftPart.CompareNoCase(_T("RACK")) == 0 && RightPart2.CompareNoCase(_T("CH")) == 0)
-				//{
-				//	LeftPart = m_nMainKeyInData.Right(2); // RACK 부분 저장
-				//	RightPart = m_nMainKeyInData.Right(2); // CH 부분 저장
-				//	Lf_checkBcrRackChIDInput(RackID, RightPart); // RACK 이동 및 포커싱 변경
-				//}
-				//else
-				//{
-				//	sdata.Format(_T("RACK BCR RESCAN"));
-				//	m_pApp->Gf_ShowMessageBox(sdata);
-				//}
-
-
-				//m_nMainKeyInData.Empty(); // 입력값 초기화
-
-				//return 1;
 				ScanIndex = true;
 
 				CString sdata;
@@ -540,6 +540,14 @@ BOOL CPidInput::PreTranslateMessage(MSG* pMsg)
 				if (rackId.Left(4).CompareNoCase(_T("RACK")) == 0 && chTag.CompareNoCase(_T("CH")) == 0)
 				{
 					Lf_checkBcrRackChIDInput(rackId, chId);
+
+					lpInspWorkInfo->m_RackID = rackId.Right(2);
+					lpInspWorkInfo->m_ChID = chId.Right(2);
+
+					/*lpInspWorkInfo->m_StopRackID = rackId.Right(2);*/
+
+					/*(lpInspWorkInfo->m_RackID).Right(2);
+					(lpInspWorkInfo->m_ChID).Right(2);*/
 				}
 				else
 				{
