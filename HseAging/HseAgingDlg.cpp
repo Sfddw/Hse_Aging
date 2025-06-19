@@ -408,13 +408,19 @@ UINT ThreadTempControler(LPVOID pParam)
 {
 	LPINSPWORKINFO lpInspWorkInfo = m_pApp->GetInspWorkInfo();
 
-	LPCWSTR portName = L"\\\\.\\COM10";  // 본인 환경에 맞는 COM 포트 번호로 변경
+	LPSYSTEMINFO lpSystemInfo = m_pApp->GetSystemInfo();
+	//CString portNameStr = _T("\\\\.\\COM10");
+	CString portNameStr;
+	portNameStr.Format(_T("\\\\.\\COM%d"), lpSystemInfo->m_nTempControllerPort);
+
+	//LPCWSTR portName = L"\\\\.\\COM10";  // 본인 환경에 맞는 COM 포트 번호로 변경
+	LPCWSTR portName = (LPCWSTR)portNameStr.GetString();
 	DCB dcbSerialParams = { 0 };
 	COMMTIMEOUTS timeouts = { 0 };
 	HANDLE hSerial;
 
 	// Serial 포트 열기
-	hSerial = CreateFile(L"\\\\.\\COM10",
+	hSerial = CreateFile(portName,
 		GENERIC_READ | GENERIC_WRITE,
 		0, NULL, OPEN_EXISTING, 0, NULL);
 

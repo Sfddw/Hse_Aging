@@ -550,7 +550,6 @@
 #define IDC_STT_MA_VCC_S2_CH16          1434
 #define IDC_EDT_UI_USERID               1434
 #define IDC_STT_TEMP_SENSOR3            1434
-#define IDC_STT_TEMP_SENSOR2            1434
 #define IDC_STT_MA_VCC_S2_CH17          1435
 #define IDC_BTN_UI_LOGIN                1435
 #define IDC_STT_MA_VCC_S2_CH18          1436
@@ -1540,6 +1539,8 @@
 #define IDC_CMB_SY_SENSING_LOG_INTERVAL 2026
 #define IDC_CHK_MA_RACK1_CH11           2027
 #define IDC_STT_SY_MES_TITLE2           2027
+#define IDC_CMB_SY_RECORDER_PORT2       2027
+#define IDC_CMB_SY_CONTROLLER_PORT      2027
 #define IDC_CHK_MA_RACK1_CH12           2028
 #define IDC_CHK_MA_RACK1_CH13           2029
 #define IDC_CHK_MA_RACK1_CH14           2030
