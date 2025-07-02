@@ -1814,7 +1814,7 @@ void CHseAgingDlg::OnTimer(UINT_PTR nIDEvent)
 		// 3초 Timer
 		AfxBeginThread(ThreadHandBcrSearch, this);
 		AfxBeginThread(ThreadFwVersionRead, this);
-		AfxBeginThread(ThreadTempControler, this);
+		//AfxBeginThread(ThreadTempControler, this);
 	}
 
 	if (nIDEvent == 8)
