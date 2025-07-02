@@ -4598,6 +4598,8 @@ void CHseAgingDlg::Lf_setAgingFUSING(int rack)
 
 	m_nAgnOutFlag[rack] = FALSE;
 
+	m_pApp->Gf_sumInitSummaryInfo(rack); // summary.ini 초기화
+
 }
 
 int CHseAgingDlg::Lf_getChannelInfo(int ctrlID)
@@ -5506,7 +5508,7 @@ void CHseAgingDlg::Lf_checkPowerLimitAlarm()
 				//m_pApp->Gf_gmesSendHost(HOST_UNDO, rack, layer, ch);
 
 				// Tower Lamp Error
-				lpInspWorkInfo->m_nAgingOperatingMode[rack] = AGING_ERROR;
+				//lpInspWorkInfo->m_nAgingOperatingMode[rack] = AGING_ERROR;
 			}
 		}
 	}
