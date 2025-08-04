@@ -4902,6 +4902,8 @@ void CHseAgingDlg::Lf_updateTowerLamp()
 		{
 			outData = outData | (DIO_OUT_RED | DIO_OUT_BUZZER);
 			blinkMode = blinkMode | DIO_OUT_RED_BLINK;
+			Sleep(5000);
+			lpInspWorkInfo->m_nAgingOperatingMode[lpInspWorkInfo->m_AgingErrorRack] = AGING_RUNNING;
 		}
 		if (towerStatus & TOWER_LAMP_RUNNING)
 		{
@@ -5509,6 +5511,9 @@ void CHseAgingDlg::Lf_checkPowerLimitAlarm()
 
 				// Tower Lamp Error
 				//lpInspWorkInfo->m_nAgingOperatingMode[rack] = AGING_ERROR;
+
+				lpInspWorkInfo->m_nAgingOperatingMode[rack] = AGING_ERROR;
+				lpInspWorkInfo->m_AgingErrorRack = rack;
 			}
 		}
 	}
