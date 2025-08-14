@@ -660,6 +660,25 @@ UINT ThreadTempControler(LPVOID pParam)
 	return (0);
 }
 
+UINT ThreadTempST590_1(LPVOID pParam)
+{
+	m_pApp->m_pTemp2xxx->TempSDR100_readTemp();
+	Sleep(100);
+	m_pApp->m_pTemp2xxx->TempST590_readTemp2();
+	Sleep(100);
+	m_pApp->m_pTemp2xxx->TempST590_readTemp3();
+	Sleep(200);
+	m_pApp->m_pTemp2xxx->TempST590_readTemp4();
+	Sleep(300);
+	/*m_pApp->m_pTemp2xxx->TempSDR100_readTemp();
+	Sleep(100);*/
+	return (0);
+}
+
+
+
+
+
 // 응용 프로그램 정보에 사용되는 CAboutDlg 대화 상자입니다.
 
 class CAboutDlg : public CDialogEx
@@ -1879,6 +1898,8 @@ void CHseAgingDlg::OnTimer(UINT_PTR nIDEvent)
 		// 3초 Timer
 		AfxBeginThread(ThreadHandBcrSearch, this);
 		AfxBeginThread(ThreadFwVersionRead, this);
+		//AfxBeginThread(ThreadTempST590_1, this);
+
 		//AfxBeginThread(ThreadTempControler, this);
 	}
 
@@ -5030,6 +5051,15 @@ void CHseAgingDlg::Lf_getTemperature()
 
 	m_pApp->m_pTemp2xxx->TempSDR100_readTemp();
 
+	/*m_pApp->m_pTemp2xxx->TempST590_readTemp2();
+	Sleep(150);
+	m_pApp->m_pTemp2xxx->TempST590_readTemp2();
+	Sleep(150);
+	m_pApp->m_pTemp2xxx->TempST590_readTemp2();
+	Sleep(150);
+	m_pApp->m_pTemp2xxx->TempSDR100_readTemp();
+	Sleep(150);*/
+
 	// Temp Log Interval 시간이되면 Temperature Log 를 기록한다.
 	if (lpSystemInfo->m_nTempLogInterval != 0)
 	{
@@ -5120,64 +5150,6 @@ void CHseAgingDlg::Lf_getTemperature()
 						lpInspWorkInfo->m_fOpeAgingIblAvg[rack][layer][ch] += measIBL;
 
 						Lf_savePowerMeasureMinMax(rack, layer, ch);
-
-						//if ((rack == 3 && layer == 2 && ch == 14)||(rack == 3 && layer == 2 && ch == 15))
-						//{
-						//	CString desktopPath;
-						//	TCHAR szPath[MAX_PATH];
-						//	LPINSPWORKINFO lpInspWorkInfo = m_pApp->GetInspWorkInfo();
-
-						//	// 바탕화면 경로 얻기
-						//	if (SUCCEEDED(SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, 0, szPath)))
-						//	{
-						//		desktopPath = szPath;
-						//	}
-
-						//	// 파일 경로 설정
-						//	CString filePath;
-						//	filePath.Format(_T("%s\\IccAvgExport.csv"), desktopPath);
-
-						//	// 파일 열기 (추가 모드: 덮어쓰기 X, 기존 뒤에 이어쓰기)
-						//	CStdioFile file;
-						//	CFileException ex;
-						//	BOOL fileExists = PathFileExists(filePath);
-
-						//	// 파일 열기
-						//	if (!file.Open(filePath, CFile::modeReadWrite | CFile::modeCreate | CFile::modeNoTruncate | CFile::typeText, &ex))
-						//	{
-						//		AfxMessageBox(_T("파일을 열 수 없습니다."));
-						//	}
-
-						//	// 커서를 파일 끝으로 이동
-						//	file.SeekToEnd();
-
-						//	// 저장할 데이터 준비
-						//	/*float iccAvg = lpInspWorkInfo->m_fOpeAgingIccAvg[3][2][14];
-						//	int measCount = lpInspWorkInfo->m_nAgingPowerMeasCount[3];*/
-						//	float iccAvg = lpInspWorkInfo->m_fOpeAgingIccAvg[rack][layer][ch];
-						//	int measCount = lpInspWorkInfo->m_nAgingPowerMeasCount[rack];
-
-						//	CString line;
-
-						//	// 처음 파일 생성일 경우 헤더 추가
-						//	if (!fileExists)
-						//	{
-						//		line = _T("IccAvg,MeasCount\r\n");
-						//		file.WriteString(line);
-						//	}
-
-						//	// 데이터 줄 추가
-						//	line.Format(_T("rack = %d, layer = %d, ch = %d - %.2f,%d\r\n"),rack, layer, ch, iccAvg, measCount);
-						//	file.WriteString(line);
-						//	file.Close();
-
-						//	CString dbg;
-						//	dbg.Format(_T("[Debug] CH15 :::::: m_fOpeAgingIccAvg = %f: PowerMeasCount (Ibl) = %f\r\n"), lpInspWorkInfo->m_fOpeAgingIccAvg[3][2][14], (float)lpInspWorkInfo->m_nAgingPowerMeasCount[3]);
-						//	OutputDebugString(dbg);
-
-						//	dbg.Format(_T("[Debug] CH16 :::::: m_fOpeAgingIccAvg = %f: PowerMeasCount (Ibl) = %f\r\n"), lpInspWorkInfo->m_fOpeAgingIccAvg[3][2][15], (float)lpInspWorkInfo->m_nAgingPowerMeasCount[3]);
-						//	OutputDebugString(dbg);
-						//}
 					}
 				}
 				//lpInspWorkInfo->m_nAgingPowerMeasCount[rack] = lpInspWorkInfo->m_nAgingPowerMeasCount[rack] + 1;
@@ -5307,22 +5279,112 @@ void CHseAgingDlg::Lf_parseSDR100Packet(char* szpacket)
 
 	if (szpacket[0] == _STX_)
 	{
-		memcpy(szCmd, &szpacket[3], 3);
-		memcpy(szRet, &szpacket[7], 2);
+		/*memcpy(szCmd, &szpacket[3], 3);
+		memcpy(szRet, &szpacket[7], 2);*/
 
-		if (!strcmp(szRet, "OK"))
+		int addr = 0;
+		sscanf_s(&szpacket[1], "%02d", &addr);
+		if (addr == TEMPSDR100_ADDR) // 온도 레코더일 때
 		{
-			lpInspWorkInfo->m_nConnectInfo[CONNECT_TEMP] = 5;
-
-			if (!strcmp(szCmd, "RSD"))
+			memcpy(szCmd, &szpacket[3], 3);
+			memcpy(szRet, &szpacket[7], 2);
+		
+			if (!strcmp(szRet, "OK"))
 			{
-				for (int tp = 1; tp < 7; tp++)
-				{
-					int nVal;
-					sscanf_s(&szpacket[10 + (tp - 1) * 5], "%04X", &nVal);
+				lpInspWorkInfo->m_nConnectInfo[CONNECT_TEMP] = 5;
 
-					if (nVal > 1000)	nVal = 0;
-					lpInspWorkInfo->m_fTempReadVal[tp - 1] = (float)(nVal / 10.0);
+				if (!strcmp(szCmd, "RSD"))
+				{
+					for (int tp = 1; tp < 7; tp++)
+					{
+						int nVal;
+						sscanf_s(&szpacket[10 + (tp - 1) * 5], "%04X", &nVal);
+
+						if (nVal > 1000)	nVal = 0;
+						lpInspWorkInfo->m_fTempReadVal[tp - 1] = (float)(nVal / 10.0);
+
+						//CString sTemp;
+						//sTemp.Format(_T("%.1fC"), lpInspWorkInfo->m_fTempReadVal[1]); // tp=3 번째 -> 인덱스 2
+						//GetDlgItem(IDC_STT_TEMP_SENSOR3)->SetWindowTextW(sTemp);
+					}
+				}
+			}
+		}
+		else if (addr == TEMPST590_ADDR2) // 온도 컨트롤러일 때(2)
+		{
+			memcpy(szCmd, &szpacket[3], 3);
+			memcpy(szCmd, &szpacket[7], 2);
+
+			if (!strcmp(szRet, "RSD"))
+			{
+				if (!strcmp(szRet, "OK"))
+				{
+					for (int tp = 1; tp < 4; tp++)
+					{
+						int nVal;
+						sscanf_s(&szpacket[10 + (tp - 1) * 5], "04X", &nVal);
+
+						if (nVal > 1000)	nVal = 0;
+
+						// 온도 저장
+						lpInspWorkInfo->m_fTempReadValST590_2[tp - 1] = (float)(nVal / 10.0);
+					}
+					// 세 번째 온도를 IDC_STT_TEMP_SENSOR3에 표시
+					CString sTemp;
+					sTemp.Format(_T("%.1fC"), lpInspWorkInfo->m_fTempReadValST590_2[0]);		// tp=3 번째 -> 인덱스 2
+					GetDlgItem(IDC_STT_TEMP_SENSOR3)->SetWindowTextW(sTemp);
+				}
+			}
+		}
+		else if (addr == TEMPST590_ADDR3) // 온도 컨트롤러일 때(3)
+		{
+			memcpy(szCmd, &szpacket[3], 3);
+			memcpy(szCmd, &szpacket[7], 2);
+
+			if (!strcmp(szRet, "RSD"))
+			{
+				if (!strcmp(szRet, "OK"))
+				{
+					for (int tp = 1; tp < 4; tp++)
+					{
+						int nVal;
+						sscanf_s(&szpacket[10 + (tp - 1) * 5], "04X", &nVal);
+
+						if (nVal > 1000)	nVal = 0;
+
+						// 온도 저장
+						lpInspWorkInfo->m_fTempReadValST590_3[tp - 1] = (float)(nVal / 10.0);
+					}
+					// 세 번째 온도를 IDC_STT_TEMP_SENSOR3에 표시
+					CString sTemp;
+					sTemp.Format(_T("%.1fC"), lpInspWorkInfo->m_fTempReadValST590_3[0]);		// tp=3 번째 -> 인덱스 2
+					GetDlgItem(IDC_STT_TEMP_SENSOR4)->SetWindowTextW(sTemp);
+				}
+			}
+		}
+		else if (addr == TEMPST590_ADDR4) // 온도 컨트롤러일 때(4)
+		{
+			memcpy(szCmd, &szpacket[3], 3);
+			memcpy(szCmd, &szpacket[7], 2);
+
+			if (!strcmp(szRet, "RSD"))
+			{
+				if (!strcmp(szRet, "OK"))
+				{
+					for (int tp = 1; tp < 4; tp++)
+					{
+						int nVal;
+						sscanf_s(&szpacket[10 + (tp - 1) * 5], "04X", &nVal);
+
+						if (nVal > 1000)	nVal = 0;
+
+						// 온도 저장
+						lpInspWorkInfo->m_fTempReadValST590_4[tp - 1] = (float)(nVal / 10.0);
+					}
+					// 세 번째 온도를 IDC_STT_TEMP_SENSOR3에 표시
+					CString sTemp;
+					sTemp.Format(_T("%.1fC"), lpInspWorkInfo->m_fTempReadValST590_4[0]);		// tp=3 번째 -> 인덱스 2
+					GetDlgItem(IDC_STT_TEMP_SENSOR5)->SetWindowTextW(sTemp);
 				}
 			}
 		}

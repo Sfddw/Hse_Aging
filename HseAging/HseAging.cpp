@@ -1952,7 +1952,8 @@ void CHseAgingApp::Gf_gmesShowLocalErrorMsg()
 
 	pCimNet->GetFieldData(&strMsg, _T("ERR_MSG_ENG"));	//ERR_MSG_ENG	ERR_MSG_LOC
 	/*errDlg.m_strEMessage.Format(_T("<MES> MES ERROR %s"), strMsg);*/
-	errDlg.m_strEMessage.Format(_T("<MES> MES ERROR %s (RACK = [%d], LAYER = [%d], CH = [%d]"), strMsg, lpInspWorkInfo->m_AgnInStartRack, lpInspWorkInfo->m_AgnInStartLayer, lpInspWorkInfo->m_AgnInStartChannel);
+	/*errDlg.m_strEMessage.Format(_T("<MES> MES ERROR %s (RACK = [%d], LAYER = [%d], CH = [%d]"), strMsg, lpInspWorkInfo->m_AgnInStartRack, lpInspWorkInfo->m_AgnInStartLayer, lpInspWorkInfo->m_AgnInStartChannel);*/
+	errDlg.m_strEMessage.Format(_T("<MES> MES ERROR %s (RACK = [%d], LAYER = [%d], CH = [%d]"), strMsg, lpInspWorkInfo->m_AgnInStartRack + 1, lpInspWorkInfo->m_AgnInStartLayer + 1, lpInspWorkInfo->m_AgnInStartChannel + 1);
 
 	errDlg.DoModal();
 }
