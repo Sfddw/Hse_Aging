@@ -4501,7 +4501,17 @@ void CHseAgingDlg::Lf_setAgingSTART(int rack)
 	lpInspWorkInfo->m_nAgingTempMatchTime[rack] = 0;
 
 	lpInspWorkInfo->m_nAgingTempMeasCount[rack] = 0;
-	lpInspWorkInfo->m_nAgingPowerMeasCount[rack] = 0;
+	//lpInspWorkInfo->m_nAgingPowerMeasCount[rack] = 0;
+	for (int rack = 0; rack < MAX_LAYER; rack++)
+	{
+		for (int layer = 0; layer < MAX_LAYER; layer++)
+		{
+			for (int ch = 0; ch < MAX_CHANNEL; ch++)
+			{
+				lpInspWorkInfo->m_nAgingPowerMeasCount[rack][layer][ch] = 0;
+			}
+		}
+	}
 	lpInspWorkInfo->m_fOpeAgingTempMin[rack] = 60;
 	lpInspWorkInfo->m_fOpeAgingTempMax[rack] = 0;
 	lpInspWorkInfo->m_fOpeAgingTempAvg[rack] = 0;
@@ -4949,8 +4959,8 @@ void CHseAgingDlg::Lf_updateTowerLamp()
 		{
 			if (lpInspWorkInfo->m_nAgingStatusS[rack] == 1)
 			{
-				outData = outData | (DIO_OUT_GREEN | DIO_OUT_BUZZER);
-				blinkMode = blinkMode | DIO_OUT_GREEN_BLINK;
+				/*outData = outData | (DIO_OUT_GREEN | DIO_OUT_BUZZER);
+				blinkMode = blinkMode | DIO_OUT_GREEN_BLINK;*/
 			}
 			
 		}
@@ -5149,16 +5159,18 @@ void CHseAgingDlg::Lf_getTemperature()
 						lpInspWorkInfo->m_fOpeAgingVblAvg[rack][layer][ch] += measVBL;
 						lpInspWorkInfo->m_fOpeAgingIblAvg[rack][layer][ch] += measIBL;
 
+						lpInspWorkInfo->m_nAgingPowerMeasCount[rack][layer][ch]++;
+
 						Lf_savePowerMeasureMinMax(rack, layer, ch);
 					}
 				}
 				//lpInspWorkInfo->m_nAgingPowerMeasCount[rack] = lpInspWorkInfo->m_nAgingPowerMeasCount[rack] + 1;
 			}
 
-			for (int rack = 0; rack < MAX_RACK; rack++)
+			/*for (int rack = 0; rack < MAX_RACK; rack++)
 			{
 				lpInspWorkInfo->m_nAgingPowerMeasCount[rack]++;
-			}
+			}*/
 
 			fclose(fp);
 		}
@@ -5887,90 +5899,265 @@ void CHseAgingDlg::Lf_checkBcrRackIDInput()
 
 		AfxGetApp()->GetMainWnd()->SendMessage(WM_BCR_RACK_ID_INPUT, (WPARAM)Value-1, NULL);
 }
+//
+//void CHseAgingDlg::Lf_writeSensingLog()
+//{
+//	// Sensing Log Write 기능으 OFF 이면 Retrun 시킨다.
+//	if (lpSystemInfo->m_nSensingLogInterval == 0)
+//		return;
+//
+//	// 시간을 계산하여 Sensing Log Write Interval 시간이 되면 로그를 기록한다.
+//	CTime time = CTime::GetCurrentTime();
+//	if ((time.GetMinute() - m_nSensingLogWriteMin) < lpSystemInfo->m_nSensingLogInterval) // m_nSensingLogWriteMin : 현재시간, m_nSensingLogInterval : 설정시간
+//	{
+//		return;
+//	}
+//	m_nSensingLogWriteMin = time.GetMinute();
+//
+//	// Sensing Log 기록한다.
+//	FILE* fp;
+//	char filepath[128] = { 0 };
+//	char buff[256] = { 0 };
+//	char dataline[1024] = { 0 };
+//
+//	sprintf_s(filepath, "./Logs/SensingLog/SensingLog_%04d%02d%02d.csv", time.GetYear(), time.GetMonth(), time.GetDay());
+//	fopen_s(&fp, filepath, "r+");
+//	if (fp == NULL)
+//	{
+//		if ((_access("./Logs/SensingLog", 0)) == -1)
+//			_mkdir("./Logs/SensingLog");
+//
+//		delayMs(1);
+//		fopen_s(&fp, filepath, "a+");
+//		if (fp == NULL)
+//		{
+//			if ((_access(filepath, 2)) != -1)
+//			{
+//				delayMs(1);
+//				fopen_s(&fp, filepath, "a+");
+//				if (fp == NULL)
+//				{
+//					return;
+//				}
+//			}
+//		}
+//		sprintf_s(buff, "TIME,RACK,LAYER,CH,PID,VCC,ICC,VBL,IBL,TEMP\n");
+//		fprintf(fp, "%s", buff);
+//	}
+//
+//	fseek(fp, 0L, SEEK_END);
+//
+//	char timeKey[100] = { 0, };
+//	char panelID[100] = { 0, };
+//	sprintf_s(timeKey, "%02d:%02d:%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
+//	for (int rack = 0; rack < MAX_RACK; rack++)
+//	{
+//		for (int layer = 0; layer < MAX_LAYER; layer++)
+//		{
+//			for (int ch = 0; ch < MAX_LAYER_CHANNEL; ch++)
+//			{
+//				sprintf_s(panelID, "%S", lpInspWorkInfo->m_sMesPanelID[rack][layer][ch].GetString());
+//
+//				sprintf_s(buff, "%s,%d,%d,%d,%s,%.2fV,%.2fA,%.2fV,%.2fV,%.1f",
+//					timeKey,
+//					rack + 1,
+//					layer + 1,
+//					ch + 1,
+//					panelID,
+//					(float)lpInspWorkInfo->m_nMeasVCC[rack][layer][ch] / 100.0f,
+//					(float)lpInspWorkInfo->m_nMeasICC[rack][layer][ch] / 100.0f,
+//					(float)lpInspWorkInfo->m_nMeasVBL[rack][layer][ch] / 100.0f,
+//					(float)lpInspWorkInfo->m_nMeasIBL[rack][layer][ch] / 100.0f,
+//					(lpInspWorkInfo->m_fTempReadVal[rack])
+//				);
+//
+//				char* pos = dataline;
+//				sprintf_s(dataline, "%s\n", buff);
+//				fprintf(fp, "%s", pos);
+//
+//				// Summary 및 실처리 전송을 위한 Min/Max/Avg 값을 저장한다.
+//				Lf_savePowerMeasureMinMax(rack, layer, ch);
+//			}
+//		}
+//		lpInspWorkInfo->m_nAgingPowerMeasCount[rack] = lpInspWorkInfo->m_nAgingPowerMeasCount[rack] + 1;
+//	}
+//
+//	fclose(fp);
+//}
 
 void CHseAgingDlg::Lf_writeSensingLog()
 {
 	// Sensing Log Write 기능으 OFF 이면 Retrun 시킨다.
-	if (lpSystemInfo->m_nSensingLogInterval == 0)
-		return;
+	/*if (lpSystemInfo->m_nSensingLogInterval == 0)
+		return;*/
 
-	// 시간을 계산하여 Sensing Log Write Interval 시간이 되면 로그를 기록한다.
-	CTime time = CTime::GetCurrentTime();
-	if ((time.GetMinute() - m_nSensingLogWriteMin) < lpSystemInfo->m_nSensingLogInterval) // m_nSensingLogWriteMin : 현재시간, m_nSensingLogInterval : 설정시간
+	if (lpSystemInfo->m_nSensingLogInterval != 0)
 	{
-		return;
-	}
-	m_nSensingLogWriteMin = time.GetMinute();
+		CTime time = CTime::GetCurrentTime();
+		int currenthour = time.GetHour();
+		int currentminute = time.GetMinute();
 
-	// Sensing Log 기록한다.
-	FILE* fp;
-	char filepath[128] = { 0 };
-	char buff[256] = { 0 };
-	char dataline[1024] = { 0 };
-
-	sprintf_s(filepath, "./Logs/SensingLog/SensingLog_%04d%02d%02d.csv", time.GetYear(), time.GetMonth(), time.GetDay());
-	fopen_s(&fp, filepath, "r+");
-	if (fp == NULL)
-	{
-		if ((_access("./Logs/SensingLog", 0)) == -1)
-			_mkdir("./Logs/SensingLog");
-
-		delayMs(1);
-		fopen_s(&fp, filepath, "a+");
-		if (fp == NULL)
+		if (currenthour != m_nTempLogWriteHour ||
+			(currentminute - m_nTempLogWriteMin) >= lpSystemInfo->m_nSensingLogInterval)
 		{
-			if ((_access(filepath, 2)) != -1)
-			{
-				delayMs(1);
-				fopen_s(&fp, filepath, "a+");
-				if (fp == NULL)
-				{
-					return;
-				}
-			}
+			//m_nSensingLogWriteHour = currenthour;
+			//m_nSensingLogWriteMin = currentminute;
+
+			//// Sensing Log 기록한다.
+			//FILE* fp;
+			//char filepath[128] = { 0 };
+			//char buff[256] = { 0 };
+			//char dataline[1024] = { 0 };
+
+			//sprintf_s(filepath, "./Logs/SensingLog/SensingLog_%04d%02d%02d.csv", time.GetYear(), time.GetMonth(), time.GetDay());
+			//fopen_s(&fp, filepath, "r+");
+			//if (fp == NULL)
+			//{
+			//	if ((_access("./Logs/SensingLog", 0)) == -1)
+			//		_mkdir("./Logs/SensingLog");
+
+			//	delayMs(1);
+			//	fopen_s(&fp, filepath, "a+");
+			//	if (fp == NULL)
+			//	{
+			//		if ((_access(filepath, 2)) != -1)
+			//		{
+			//			delayMs(1);
+			//			fopen_s(&fp, filepath, "a+");
+			//			if (fp == NULL)
+			//			{
+			//				return;
+			//			}
+			//		}
+			//	}
+			//	sprintf_s(buff, "TIME,RACK,LAYER,CH,PID,VCC,ICC,VBL,IBL,TEMP\n");
+			//	fprintf(fp, "%s", buff);
+			//}
+
+			//fseek(fp, 0L, SEEK_END);
+
+			//char timeKey[100] = { 0, };
+			//char panelID[100] = { 0, };
+			//sprintf_s(timeKey, "%02d:%02d:%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
+			//for (int rack = 0; rack < MAX_RACK; rack++)
+			//{
+			//	for (int layer = 0; layer < MAX_LAYER; layer++)
+			//	{
+			//		for (int ch = 0; ch < MAX_LAYER_CHANNEL; ch++)
+			//		{
+			//			sprintf_s(panelID, "%S", lpInspWorkInfo->m_sMesPanelID[rack][layer][ch].GetString());
+
+			//			sprintf_s(buff, "%s,%d,%d,%d,%s,%.2fV,%.2fA,%.2fV,%.2fV,%.1f",
+			//				timeKey,
+			//				rack + 1,
+			//				layer + 1,
+			//				ch + 1,
+			//				panelID,
+			//				(float)lpInspWorkInfo->m_nMeasVCC[rack][layer][ch] / 100.0f,
+			//				(float)lpInspWorkInfo->m_nMeasICC[rack][layer][ch] / 100.0f,
+			//				(float)lpInspWorkInfo->m_nMeasVBL[rack][layer][ch] / 100.0f,
+			//				(float)lpInspWorkInfo->m_nMeasIBL[rack][layer][ch] / 100.0f,
+			//				(lpInspWorkInfo->m_fTempReadVal[rack])
+			//			);
+
+			//			char* pos = dataline;
+			//			sprintf_s(dataline, "%s\n", buff);
+			//			fprintf(fp, "%s", pos);
+
+			//			// Summary 및 실처리 전송을 위한 Min/Max/Avg 값을 저장한다.
+			//			Lf_savePowerMeasureMinMax(rack, layer, ch);
+			//		}
+			//	}
+			//	lpInspWorkInfo->m_nAgingPowerMeasCount[rack] = lpInspWorkInfo->m_nAgingPowerMeasCount[rack] + 1;
+			//}
+
+			//fclose(fp);
 		}
-		sprintf_s(buff, "TIME,RACK,LAYER,CH,PID,VCC,ICC,VBL,IBL,TEMP\n");
-		fprintf(fp, "%s", buff);
+
+		// 시간을 계산하여 Sensing Log Write Interval 시간이 되면 로그를 기록한다.
+		/*CTime time = CTime::GetCurrentTime();
+		int currenthour = time.GetHour();
+		int currentminute = time.GetMinute();*/
+		//if ((time.GetMinute() - m_nSensingLogWriteMin) < lpSystemInfo->m_nSensingLogInterval) // m_nSensingLogWriteMin : 현재시간, m_nSensingLogInterval : 설정시간
+		//{
+		//	return;
+		//}
+		//if (currenthour != m_nSensingLogWriteHour ||
+		//	(currentminute - m_nSensingLogWriteMin) >= lpSystemInfo->m_nSensingLogInterval)
+		//{
+		//	m_nSensingLogWriteHour = currenthour;
+		//	m_nSensingLogWriteMin = currentminute;
+
+		//	// Sensing Log 기록한다.
+		//	FILE* fp;
+		//	char filepath[128] = { 0 };
+		//	char buff[256] = { 0 };
+		//	char dataline[1024] = { 0 };
+
+		//	sprintf_s(filepath, "./Logs/SensingLog/SensingLog_%04d%02d%02d.csv", time.GetYear(), time.GetMonth(), time.GetDay());
+		//	fopen_s(&fp, filepath, "r+");
+		//	if (fp == NULL)
+		//	{
+		//		if ((_access("./Logs/SensingLog", 0)) == -1)
+		//			_mkdir("./Logs/SensingLog");
+
+		//		delayMs(1);
+		//		fopen_s(&fp, filepath, "a+");
+		//		if (fp == NULL)
+		//		{
+		//			if ((_access(filepath, 2)) != -1)
+		//			{
+		//				delayMs(1);
+		//				fopen_s(&fp, filepath, "a+");
+		//				if (fp == NULL)
+		//				{
+		//					return;
+		//				}
+		//			}
+		//		}
+		//		sprintf_s(buff, "TIME,RACK,LAYER,CH,PID,VCC,ICC,VBL,IBL,TEMP\n");
+		//		fprintf(fp, "%s", buff);
+		//	}
+
+		//	fseek(fp, 0L, SEEK_END);
+
+		//	char timeKey[100] = { 0, };
+		//	char panelID[100] = { 0, };
+		//	sprintf_s(timeKey, "%02d:%02d:%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
+		//	for (int rack = 0; rack < MAX_RACK; rack++)
+		//	{
+		//		for (int layer = 0; layer < MAX_LAYER; layer++)
+		//		{
+		//			for (int ch = 0; ch < MAX_LAYER_CHANNEL; ch++)
+		//			{
+		//				sprintf_s(panelID, "%S", lpInspWorkInfo->m_sMesPanelID[rack][layer][ch].GetString());
+
+		//				sprintf_s(buff, "%s,%d,%d,%d,%s,%.2fV,%.2fA,%.2fV,%.2fV,%.1f",
+		//					timeKey,
+		//					rack + 1,
+		//					layer + 1,
+		//					ch + 1,
+		//					panelID,
+		//					(float)lpInspWorkInfo->m_nMeasVCC[rack][layer][ch] / 100.0f,
+		//					(float)lpInspWorkInfo->m_nMeasICC[rack][layer][ch] / 100.0f,
+		//					(float)lpInspWorkInfo->m_nMeasVBL[rack][layer][ch] / 100.0f,
+		//					(float)lpInspWorkInfo->m_nMeasIBL[rack][layer][ch] / 100.0f,
+		//					(lpInspWorkInfo->m_fTempReadVal[rack])
+		//				);
+
+		//				char* pos = dataline;
+		//				sprintf_s(dataline, "%s\n", buff);
+		//				fprintf(fp, "%s", pos);
+
+		//				// Summary 및 실처리 전송을 위한 Min/Max/Avg 값을 저장한다.
+		//				Lf_savePowerMeasureMinMax(rack, layer, ch);
+		//			}
+		//		}
+		//		lpInspWorkInfo->m_nAgingPowerMeasCount[rack] = lpInspWorkInfo->m_nAgingPowerMeasCount[rack] + 1;
+		//	}
+
+		//	fclose(fp);
 	}
-
-	fseek(fp, 0L, SEEK_END);
-
-	char timeKey[100] = { 0, };
-	char panelID[100] = { 0, };
-	sprintf_s(timeKey, "%02d:%02d:%02d", time.GetHour(), time.GetMinute(), time.GetSecond());
-	for (int rack = 0; rack < MAX_RACK; rack++)
-	{
-		for (int layer = 0; layer < MAX_LAYER; layer++)
-		{
-			for (int ch = 0; ch < MAX_LAYER_CHANNEL; ch++)
-			{
-				sprintf_s(panelID, "%S", lpInspWorkInfo->m_sMesPanelID[rack][layer][ch].GetString());
-
-				sprintf_s(buff, "%s,%d,%d,%d,%s,%.2fV,%.2fA,%.2fV,%.2fV,%.1f",
-					timeKey,
-					rack + 1,
-					layer + 1,
-					ch + 1,
-					panelID,
-					(float)lpInspWorkInfo->m_nMeasVCC[rack][layer][ch] / 100.0f,
-					(float)lpInspWorkInfo->m_nMeasICC[rack][layer][ch] / 100.0f,
-					(float)lpInspWorkInfo->m_nMeasVBL[rack][layer][ch] / 100.0f,
-					(float)lpInspWorkInfo->m_nMeasIBL[rack][layer][ch] / 100.0f,
-					(lpInspWorkInfo->m_fTempReadVal[rack])
-				);
-
-				char* pos = dataline;
-				sprintf_s(dataline, "%s\n", buff);
-				fprintf(fp, "%s", pos);
-
-				// Summary 및 실처리 전송을 위한 Min/Max/Avg 값을 저장한다.
-				Lf_savePowerMeasureMinMax(rack, layer, ch);
-			}
-		}
-		lpInspWorkInfo->m_nAgingPowerMeasCount[rack] = lpInspWorkInfo->m_nAgingPowerMeasCount[rack] + 1;
-	}
-
-	fclose(fp);
 }
 
 void CHseAgingDlg::Lf_checkComplete5MinOver()
